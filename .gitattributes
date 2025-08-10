@@ -1,0 +1,21 @@
+# Guide GitHub Linguist language stats
+
+# Treat code directories explicitly
+sentinelscope/** linguist-language=Python
+rust/** linguist-language=Rust
+
+# Exclude non-source from language breakdown
+docs/** linguist-documentation
+.github/** linguist-documentation
+out/** linguist-generated
+sentinelscope.egg-info/** linguist-generated
+
+# Don't let the Makefile skew the stats
+Makefile linguist-generated
+
+# Common cache/build artifacts
+**/__pycache__/** linguist-generated
+**/*.pyc linguist-generated
+**/dist/** linguist-generated
+**/build/** linguist-generated
+
