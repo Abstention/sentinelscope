@@ -1,8 +1,14 @@
-# Guide GitHub Linguist language stats
+## Guide GitHub Linguist language stats
 
-# Treat code directories explicitly
+# Count Python app code
 sentinelscope/** linguist-language=Python
-rust/** linguist-language=Rust
+*.py linguist-detectable=true
+
+# Treat Rust accelerator as vendored (optional module)
+rust/** linguist-vendored
+*.rs linguist-vendored
+Cargo.toml linguist-vendored
+Cargo.lock linguist-vendored
 
 # Exclude non-source from language breakdown
 docs/** linguist-documentation
