@@ -1,4 +1,5 @@
 ## Examples
+Copy, paste, impress.
 
 ### 1) Baseline a marketing site
 ```bash

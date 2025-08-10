@@ -1,6 +1,7 @@
 ## Quickstart
+The mission: clear answers, minimal drama.
 
-This guide gets you from zero to running scans and producing reports in minutes.
+This guide gets you from zero to “wow, that’s tidy” in minutes.
 
 ### Prerequisites
 - Python 3.11+

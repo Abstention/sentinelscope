@@ -1,4 +1,5 @@
 ## Troubleshooting
+If it can fail, it will — here’s how to win anyway.
 
 ### ModuleNotFoundError: sentinelscope
 Use the same interpreter you installed into:

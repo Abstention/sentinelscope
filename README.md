@@ -1,6 +1,7 @@
 ## SentinelScope
+> Created by Josh Arbourne. Coffee optional; curiosity mandatory.
 
-Advanced attack surface recon and security reporting toolkit. Built for cybersecurity professionals to perform fast, asynchronous recon on domains and URLs, assess security headers, analyze TLS posture, enumerate subdomains using Certificate Transparency, scan common ports, and produce polished HTML/JSON reports. Ships with a CLI, REST API, pre-commit hooks, tests, and CI.
+Advanced attack surface recon and security reporting toolkit. It discovers subdomains, scans common ports, reviews HTTPS and DNS posture, and produces a polished HTML report anyone can read. Built with a CLI, REST API, tests, and CI. It’s the neat, friendly report you show your boss — without the panic.
 
 ### Highlights
 - **Async recon pipeline**: subdomains, ports, TLS, HTTP headers, DNS, web preview
@@ -19,9 +20,10 @@ pip install -e .  # optional for editable install
 ```
 
 ### Quickstart
-Scan a domain and generate both JSON and HTML reports:
+Generate a one-page HTML report:
 ```bash
-sscan domain example.com --json out/example.json --html out/example.html
+sscan domain example.com --html out/example.html
+open out/example.html  # macOS
 ```
 
 Run the API server:
@@ -47,6 +49,27 @@ sscan headers URL [--json out.json]
 sscan tls DOMAIN [--json out.json]
 sscan ports HOST [--ports top100|top30|custom --custom-ports "22,80,443" --json out.json]
 ```
+
+### Show it to a layperson (GitHub Pages demo)
+Create and publish a static demo page from your latest report:
+```bash
+# 1) Generate a fresh HTML report
+sscan domain example.com --html out/example.html
+
+# 2) Copy to docs/ and push
+mkdir -p docs
+cp out/example.html docs/index.html
+git add docs/index.html
+git commit -m "docs: publish demo report"
+git push
+
+# 3) In GitHub → Settings → Pages → Build and deployment
+#    Source: Deploy from branch
+#    Branch: main /docs
+# Your live report will be available at: https://<username>.github.io/<repo>/
+```
+
+Tip: Use a domain you own or a known-public domain like `example.com` for demos.
 
 ### What gets checked
 - **Subdomains**: CT log enumeration via crt.sh + lightweight wordlist DNS resolution

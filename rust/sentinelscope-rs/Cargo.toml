@@ -10,6 +10,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = { version = "0.21", features = ["extension-module"] }
-tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "macros"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "macros", "sync"] }
 futures = "0.3"
 

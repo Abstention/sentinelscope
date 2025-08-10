@@ -1,4 +1,5 @@
 ## Real-world Use Cases
+Yes, these actually happen.
 
 ### 1) Attack surface recon for a new acquisition
 Goal: get a quick snapshot of public exposure.

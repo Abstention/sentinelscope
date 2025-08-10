@@ -1,4 +1,5 @@
 ## Performance Tuning
+Speed is great; correctness is greater.
 
 The defaults are conservative. You can increase speed safely with care.
 

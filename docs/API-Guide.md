@@ -1,4 +1,5 @@
 ## API Guide
+For those who like their automation automated.
 
 The FastAPI app exposes a REST endpoint to kick off scans.
 

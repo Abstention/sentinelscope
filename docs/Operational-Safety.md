@@ -1,4 +1,5 @@
 ## Operational Safety
+Be the good kind of noisy.
 
 SentinelScope is for authorized testing only.
 

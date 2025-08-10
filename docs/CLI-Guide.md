@@ -1,8 +1,10 @@
 ## CLI Guide
+We love CLIs because buttons are shy.
 
 SentinelScope ships with a Typer-based CLI `sscan`.
 
 ### Help
+If you’re lost, `--help` is your compass.
 ```bash
 sscan --help
 ```

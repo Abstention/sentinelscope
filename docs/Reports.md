@@ -1,4 +1,5 @@
 ## Reports
+Fancy visuals, practical substance.
 
 SentinelScope produces both JSON and polished HTML reports.
 
