@@ -56,7 +56,18 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
             host = raw.replace("https://", "").replace("http://", "").strip('/')
     else:
         host = raw.strip('/')
-    base_url = f"https://{host}"
+    # Preserve scheme if provided; default to https
+    scheme = "https"
+    if raw.startswith("http://") or raw.startswith("https://"):
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(raw)
+            if parsed.scheme in ("http", "https"):
+                scheme = parsed.scheme
+        except Exception:
+            pass
+    base_url = f"{scheme}://{host}"
     ports_list = TOP_30_PORTS
     if req.port_profile == "top100":
         # Keep in sync with CLI; basic extension

@@ -129,7 +129,18 @@ def domain(
                 host = raw.replace("https://", "").replace("http://", "").strip('/')
         else:
             host = raw.strip('/')
-        base_url = f"https://{host}"
+        # Preserve scheme if provided; default to https
+        scheme = "https"
+        if raw.startswith("http://") or raw.startswith("https://"):
+            try:
+                from urllib.parse import urlparse
+
+                parsed = urlparse(raw)
+                if parsed.scheme in ("http", "https"):
+                    scheme = parsed.scheme
+            except Exception:
+                pass
+        base_url = f"{scheme}://{host}"
         ports_list = _resolve_ports(ports, custom_ports)
 
         console.rule(f"[bold]Scanning {host}")
@@ -188,7 +199,7 @@ def domain(
         table.add_row("Open ports", str(len(result.ports.open_ports) if result.ports else 0))
         table.add_row("Subdomains", str(len(result.subdomains.discovered) if result.subdomains else 0))
         table.add_row("TLS protocol", result.tls.protocol if result.tls and result.tls.protocol else "n/a")
-        table.add_row("Headers grade", result.headers.grade if result.headers else "n/a")
+        table.add_row("Headers grade", result.headers.grade if (result.headers and result.headers.grade) else "n/a")
         table.add_row("SPF present", str(result.dns.spf_present if result.dns else False))
         table.add_row("DMARC policy", result.dns.dmarc_policy if result.dns else "n/a")
         table.add_row("AXFR open NS", str(len(result.dns_axfr.axfr_allowed_on) if result.dns_axfr else 0))
@@ -204,6 +215,73 @@ def domain(
             console.print(f"[green]Wrote HTML[/green] {html_out}")
 
     asyncio.run(_run())
+
+
+@app.command()
+def interactive():
+    """Guide you through an interactive scan setup and run it."""
+    # Inputs
+    domain_in = typer.prompt("Domain (e.g., example.com or https://...)", type=str)
+    ports_choice = typer.prompt("Port profile [top30/top100/custom]", default="top30")
+    if ports_choice not in {"top30", "top100", "custom"}:
+        raise typer.BadParameter("ports must be one of: top30, top100, custom")
+    custom_ports = None
+    if ports_choice == "custom":
+        custom_ports = typer.prompt("Custom ports CSV (e.g., 22,80,443)", default="22,80,443")
+
+    do_scan_subdomains = typer.confirm("Scan subdomains?", default=True)
+    do_scan_ports = typer.confirm("Scan ports?", default=True)
+    analyze_headers = typer.confirm("Analyze HTTP security headers?", default=True)
+    analyze_tls = typer.confirm("Analyze TLS?", default=True)
+    analyze_dns = typer.confirm("Analyze DNS (SPF/DMARC)?", default=True)
+    web_preview = typer.confirm("Fetch web preview?", default=True)
+
+    analyze_cors_opt = typer.confirm("Analyze CORS?", default=True)
+    analyze_cookies_opt = typer.confirm("Analyze cookies?", default=True)
+    fingerprint_web_opt = typer.confirm("Fingerprint web (server/WAF)?", default=True)
+    check_security_txt_opt = typer.confirm("Check security.txt?", default=True)
+    check_mixed_content_opt = typer.confirm("Check mixed content?", default=True)
+    check_dnssec_caa_opt = typer.confirm("Check DNSSEC/CAA?", default=True)
+
+    concurrency = typer.prompt("Port scan concurrency", default=200, type=int)
+    timeout = typer.prompt("HTTP timeout (seconds)", default=6.0, type=float)
+    dns_timeout = typer.prompt("DNS timeout (seconds)", default=2.0, type=float)
+
+    write_html = typer.confirm("Write HTML report?", default=True)
+    html_out: Path | None = None
+    if write_html:
+        html_out_default = Path("out/report.html")
+        html_out = Path(typer.prompt("HTML output path", default=str(html_out_default)))
+
+    write_json = typer.confirm("Write JSON output?", default=False)
+    json_out: Path | None = None
+    if write_json:
+        json_out_default = Path("out/report.json")
+        json_out = Path(typer.prompt("JSON output path", default=str(json_out_default)))
+
+    # Run using the same implementation as the domain command
+    domain(
+        domain=domain_in,
+        ports=ports_choice,
+        custom_ports=custom_ports,
+        json_out=json_out,
+        html_out=html_out,
+        do_scan_subdomains=do_scan_subdomains,
+        do_scan_ports=do_scan_ports,
+        analyze_headers=analyze_headers,
+        analyze_tls=analyze_tls,
+        analyze_dns=analyze_dns,
+        web_preview=web_preview,
+        analyze_cors_opt=analyze_cors_opt,
+        analyze_cookies_opt=analyze_cookies_opt,
+        fingerprint_web_opt=fingerprint_web_opt,
+        check_security_txt_opt=check_security_txt_opt,
+        check_mixed_content_opt=check_mixed_content_opt,
+        check_dnssec_caa_opt=check_dnssec_caa_opt,
+        concurrency=concurrency,
+        timeout=timeout,
+        dns_timeout=dns_timeout,
+    )
 
 
 @app.command()

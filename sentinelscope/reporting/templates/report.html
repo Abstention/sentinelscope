@@ -69,7 +69,7 @@
     <section class="card">
       <div class="grid-2">
         <div style="display:flex; align-items:center; gap:16px;">
-          {% if result.headers and result.headers.score is not none %}
+          {% if result.headers and result.headers.grade != 'N/A' %}
           <div id="scoreRing" class="ring" data-score="{{ result.headers.score }}"><span>{{ result.headers.score }}%</span></div>
           {% else %}
           <div class="pill">No header score</div>

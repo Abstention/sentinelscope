@@ -20,7 +20,8 @@ async def fetch_preview(url: str, timeout: float = 6.0) -> WebPreview:
         title = title_match.group(1).strip() if title_match else None
         server = resp.headers.get("server")
         content_type = resp.headers.get("content-type")
-        return WebPreview(url=url, status_code=resp.status_code, title=title, server=server, content_type=content_type)
+        # Record effective URL after redirects (and potential scheme changes)
+        return WebPreview(url=str(resp.url), status_code=resp.status_code, title=title, server=server, content_type=content_type)
     except Exception:
         return WebPreview(url=url, status_code=None, title=None, server=None, content_type=None)
 

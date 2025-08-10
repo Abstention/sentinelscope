@@ -27,5 +27,6 @@ async def fingerprint_web(url: str, timeout: float = 6.0) -> WebFingerprint:
     techs: List[str] = []
     if 'x-powered-by' in resp.headers:
         techs.append(resp.headers.get('x-powered-by'))
-    return WebFingerprint(url=url, server=server, waf_or_cdn=waf, technologies=techs)
+    # Use the final effective URL to reflect redirects and scheme changes
+    return WebFingerprint(url=str(resp.url), server=server, waf_or_cdn=waf, technologies=techs)
 

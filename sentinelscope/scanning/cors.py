@@ -19,7 +19,7 @@ async def analyze_cors(url: str, timeout: float = 6.0) -> CORSAssessment:
         rec: Optional[str] = None
         if not ao:
             rec = "Set strict CORS only if cross-origin is required"
-        return CORSAssessment(url=url, allow_origin=ao, allow_credentials=(ac.lower()=="true") if ac else None, risks=risks, recommendation=rec)
+        return CORSAssessment(url=str(resp.url), allow_origin=ao, allow_credentials=(ac.lower()=="true") if ac else None, risks=risks, recommendation=rec)
     except Exception:
         return CORSAssessment(url=url, allow_origin=None, allow_credentials=None, risks=[], recommendation=None)
 

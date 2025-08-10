@@ -8,7 +8,13 @@ from sentinelscope.models import SecurityTxt
 
 
 async def fetch_security_txt(domain: str, timeout: float = 5.0) -> SecurityTxt:
-    urls = [f"https://{domain}/.well-known/security.txt", f"https://{domain}/security.txt"]
+    # Always try HTTPS first, then HTTP for compatibility
+    urls = [
+        f"https://{domain}/.well-known/security.txt",
+        f"https://{domain}/security.txt",
+        f"http://{domain}/.well-known/security.txt",
+        f"http://{domain}/security.txt",
+    ]
     text: Optional[str] = None
     for u in urls:
         try:

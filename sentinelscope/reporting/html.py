@@ -15,6 +15,7 @@ def render_html_report(result: DomainScanResult) -> str:
         autoescape=select_autoescape(["html", "xml"]),
     )
     template = env.get_template("report.html")
+    # Ensure grade/score are shown consistently: render as-is from result
     return template.render(result=result)
 
 
