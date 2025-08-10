@@ -1,0 +1,105 @@
+## SentinelScope
+
+Advanced attack surface recon and security reporting toolkit. Built for cybersecurity professionals to perform fast, asynchronous recon on domains and URLs, assess security headers, analyze TLS posture, enumerate subdomains using Certificate Transparency, scan common ports, and produce polished HTML/JSON reports. Ships with a CLI, REST API, pre-commit hooks, tests, and CI.
+
+### Highlights
+- **Async recon pipeline**: subdomains, ports, TLS, and HTTP headers in parallel
+- **Actionable reporting**: clean HTML report with charts + machine-readable JSON
+- **Modern stack**: Python 3.11+, FastAPI, Typer, Pydantic v2, Jinja2, Rich
+- **Secure defaults**: timeouts, safe parsing, input validation
+- **DX**: pre-commit (ruff, black), GitHub Actions CI, typed codebase
+
+### Install
+```bash
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+pip install -e .  # optional for editable install
+```
+
+### Quickstart
+Scan a domain and generate both JSON and HTML reports:
+```bash
+sscan domain example.com --json out/example.json --html out/example.html
+```
+
+Run the API server:
+```bash
+uvicorn sentinelscope.api:app --host 0.0.0.0 --port 8000
+```
+
+Call the API:
+```bash
+curl -X POST 'http://localhost:8000/scan/domain' \
+  -H 'Content-Type: application/json' \
+  -d '{"domain":"example.com","scan_ports":true,"scan_subdomains":true,"analyze_headers":true,"analyze_tls":true}'
+```
+
+### CLI Usage
+```bash
+sscan --help
+
+sscan domain DOMAIN [--ports top100|top30|custom --custom-ports "80,443,8080" \
+                     --json out.json --html out.html]
+
+sscan headers URL [--json out.json]
+sscan tls DOMAIN [--json out.json]
+sscan ports HOST [--ports top100|top30|custom --custom-ports "22,80,443" --json out.json]
+```
+
+### What gets checked
+- **Subdomains**: CT log enumeration via crt.sh + lightweight wordlist DNS resolution
+- **Ports**: Async TCP connect scan against curated common ports
+- **TLS**: Certificate subject/issuer, SANs, expiry, validity window, protocol used
+- **HTTP Security Headers**: Presence/quality of CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, etc., with a letter grade
+
+### Project Structure
+```
+sentinelscope/
+  api.py           # FastAPI app
+  cli.py           # Typer CLI
+  models.py        # Pydantic models (v2)
+  reporting/       # HTML report generator + templates
+  scanning/        # Recon modules: ports, tls, http_headers, subdomains
+  utils/           # Shared helpers
+tests/
+.github/workflows/ci.yml
+docs/
+  Quickstart.md
+  CLI-Guide.md
+  API-Guide.md
+  Reports.md
+  Use-Cases.md
+  Performance-Tuning.md
+  Troubleshooting.md
+  Operational-Safety.md
+  Examples.md
+```
+
+### Development
+```bash
+pip install -r requirements-dev.txt
+pre-commit install
+pytest -q
+```
+
+### Documentation
+- Quickstart: docs/Quickstart.md
+- CLI Guide: docs/CLI-Guide.md
+- API Guide: docs/API-Guide.md
+- Reports: docs/Reports.md
+- Use Cases: docs/Use-Cases.md
+- Performance Tuning: docs/Performance-Tuning.md
+- Troubleshooting: docs/Troubleshooting.md
+- Operational Safety: docs/Operational-Safety.md
+- Examples: docs/Examples.md
+
+### Security and Legal
+- For authorized testing only. Always obtain permission before scanning domains you don’t own.
+- MIT License. See `LICENSE`.
+
+### Roadmap Ideas
+- DNS zone transfer checks, CNAME takeovers
+- Screenshots of web targets, WAF/CDN detection
+- SBOM ingestion and OSV integration
+- Container and IaC policy scanning
+

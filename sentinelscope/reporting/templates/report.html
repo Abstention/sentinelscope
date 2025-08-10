@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SentinelScope Report - {{ result.domain }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; padding: 0; background: #0f172a; color: #e2e8f0; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; margin-bottom: 16px; padding: 16px; }
+    h1, h2 { color: #f8fafc; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #1f2937; text-align: left; padding: 8px; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 8px; font-weight: 600; }
+    .badge-green { background: #065f46; color: #d1fae5; }
+    .badge-red { background: #7f1d1d; color: #fee2e2; }
+    .muted { color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const score = {{ result.headers.score if result.headers else 0 }};
+      const ctx = document.getElementById('scoreChart');
+      if (ctx) {
+        new Chart(ctx, {
+          type: 'doughnut',
+          data: { labels: ['Score','Remaining'], datasets: [{ data: [score, 100-score], backgroundColor: ['#10b981', '#1f2937'] }] },
+          options: { plugins: { legend: { display: false } } }
+        });
+      }
+    });
+  </script>
+  <meta name="author" content="SentinelScope" />
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>SentinelScope Report</h1>
+      <p class="muted">Target: <strong>{{ result.domain }}</strong> &middot; Started: {{ result.started_at }} &middot; Finished: {{ result.finished_at }}</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Security Headers</h2>
+        {% if result.headers %}
+          <p>Grade: <span class="badge {{ 'badge-green' if result.headers.grade in ['A+','A','B'] else 'badge-red' }}">{{ result.headers.grade }}</span></p>
+          <canvas id="scoreChart" width="200" height="200"></canvas>
+          <table>
+            <thead><tr><th>Header</th><th>Status</th><th>Recommendation</th></tr></thead>
+            <tbody>
+              {% for f in result.headers.findings %}
+                <tr>
+                  <td>{{ f.header }}</td>
+                  <td>{{ 'Present' if f.present and not f.recommendation else 'Missing/Improve' }}</td>
+                  <td class="muted">{{ f.recommendation or '' }}</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% else %}
+          <p class="muted">No header analysis</p>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h2>TLS</h2>
+        {% if result.tls %}
+          <p>Protocol: <strong>{{ result.tls.protocol or 'n/a' }}</strong></p>
+          <p>Valid: <strong>{{ result.tls.valid_from or 'n/a' }}</strong> → <strong>{{ result.tls.valid_to or 'n/a' }}</strong> ({{ result.tls.days_until_expiry if result.tls.days_until_expiry is not none else 'n/a' }} days)</p>
+          <p><span class="muted">Subject:</span> {{ result.tls.subject or {} }}</p>
+          <p><span class="muted">Issuer:</span> {{ result.tls.issuer or {} }}</p>
+          {% if result.tls.warnings %}
+            <p><span class="badge badge-red">{{ result.tls.warnings|length }} warning(s)</span></p>
+            <ul>
+              {% for w in result.tls.warnings %}<li>{{ w }}</li>{% endfor %}
+            </ul>
+          {% endif %}
+        {% else %}
+          <p class="muted">No TLS info</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Open Ports</h2>
+        {% if result.ports %}
+          {% if result.ports.open_ports %}
+            <p><span class="badge badge-red">{{ result.ports.open_ports|length }} found</span></p>
+            <p class="muted">Scanned: {{ result.ports.ports_scanned|length }} ports</p>
+            <table>
+              <thead><tr><th>Port</th><th>Status</th></tr></thead>
+              <tbody>
+              {% for r in result.ports.results %}
+                <tr>
+                  <td>{{ r.port }}</td>
+                  <td>{{ 'Open' if r.is_open else 'Closed' }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          {% else %}
+            <p class="badge badge-green">No open common ports</p>
+          {% endif %}
+        {% else %}
+          <p class="muted">No port scan</p>
+        {% endif %}
+      </div>
+
+      <div class="card">
+        <h2>Subdomains</h2>
+        {% if result.subdomains %}
+          <p class="muted">Sources: {{ result.subdomains.sources }}</p>
+          {% if result.subdomains.discovered %}
+            <ul>
+            {% for s in result.subdomains.discovered %}
+              <li>{{ s }}</li>
+            {% endfor %}
+            </ul>
+          {% else %}
+            <p class="muted">None discovered</p>
+          {% endif %}
+        {% else %}
+          <p class="muted">No subdomain enumeration</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="card">
+      <p class="muted">Generated by SentinelScope</p>
+    </div>
+  </div>
+</body>
+</html>
+

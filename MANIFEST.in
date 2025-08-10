@@ -1,0 +1,2 @@
+recursive-include sentinelscope/reporting/templates *.html
+
