@@ -1,0 +1,15 @@
+[package]
+name = "sentinelscope-rs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[lib]
+name = "sentinelscope_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.21", features = ["extension-module"] }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "time", "macros"] }
+futures = "0.3"
+

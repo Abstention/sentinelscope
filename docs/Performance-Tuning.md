@@ -5,6 +5,10 @@ The defaults are conservative. You can increase speed safely with care.
 ### Ports scan
 - Current defaults: concurrency ~200, timeout 1s
 - For fast networks: raise concurrency to 500–1000 and lower timeout to 0.5s in code if required
+- Build the optional Rust extension for significantly faster port scanning:
+  ```bash
+  pip install maturin && maturin develop
+  ```
 
 ### Subdomains
 - DNS resolution concurrency ~50; increase to 100–200 with reliable DNS

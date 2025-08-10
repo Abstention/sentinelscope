@@ -9,6 +9,7 @@ Advanced attack surface recon and security reporting toolkit. Built for cybersec
 - **Modern stack**: Python 3.11+, FastAPI, Typer, Pydantic v2, Jinja2, Rich
 - **Secure defaults**: timeouts, safe parsing, input validation
 - **DX**: pre-commit (ruff, black), GitHub Actions CI, typed codebase
+ - Optional Rust acceleration for port scanning (via maturin)
 
 ### Install
 ```bash
@@ -84,6 +85,12 @@ docs/
 pip install -r requirements-dev.txt
 pre-commit install
 pytest -q
+```
+
+### Optional: Build Rust native extension
+```bash
+pip install maturin
+maturin develop  # builds and installs the sentinelscope_rs extension for the active env
 ```
 
 ### Documentation

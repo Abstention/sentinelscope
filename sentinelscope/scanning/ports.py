@@ -4,6 +4,7 @@ import asyncio
 from typing import Iterable, List
 
 from sentinelscope.models import PortResult, PortScanResult
+from sentinelscope.native import scan_ports_native_available, scan_ports_native
 
 
 TOP_30_PORTS = [
@@ -25,6 +26,16 @@ async def _try_connect(host: str, port: int, timeout: float = 1.0) -> bool:
 
 async def scan_ports(host: str, ports: Iterable[int], concurrency: int = 200, timeout: float = 1.0) -> PortScanResult:
     ports_list: List[int] = sorted(set(int(p) for p in ports))
+    # Fast path via native Rust extension if available
+    if scan_ports_native_available():
+        try:
+            pairs = scan_ports_native(host, ports_list, int(timeout * 1000), concurrency)
+            results = [PortResult(port=int(p), is_open=bool(o)) for p, o in pairs]
+            open_ports = [r.port for r in results if r.is_open]
+            return PortScanResult(host=host, ports_scanned=ports_list, open_ports=open_ports, results=results)
+        except Exception:
+            pass
+
     semaphore = asyncio.Semaphore(concurrency)
 
     async def scan_one(p: int) -> PortResult:
