@@ -56,14 +56,18 @@ Create and publish a static demo page from your latest report:
 # 1) Generate a fresh HTML report
 sscan domain example.com --html out/example.html
 
-# 2) Copy to docs/ and push
-mkdir -p docs
-cp out/example.html docs/index.html
+# 2) Use the richer demo template (optional) or your own report
+#    a) Use curated demo page
+cp docs/index.html docs/index.html  # already present (custom demo)
+#    b) Or publish a live report you generated
+# cp out/example.html docs/index.html
+
+# 3) Commit and push
 git add docs/index.html
 git commit -m "docs: publish demo report"
 git push
 
-# 3) In GitHub → Settings → Pages → Build and deployment
+# 4) In GitHub → Settings → Pages → Build and deployment
 #    Source: Deploy from branch
 #    Branch: main /docs
 # Your live report will be available at: https://<username>.github.io/<repo>/

@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SentinelScope Demo Report</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 0; padding: 0; background: #0f172a; color: #e2e8f0; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px; }
+    .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; margin-bottom: 16px; padding: 16px; }
+    h1, h2 { color: #f8fafc; }
+    p, li { line-height: 1.6; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #1f2937; text-align: left; padding: 8px; vertical-align: top; }
+    .badge { display: inline-block; padding: 4px 8px; border-radius: 8px; font-weight: 600; }
+    .badge-green { background: #065f46; color: #d1fae5; }
+    .badge-yellow { background: #92400e; color: #ffedd5; }
+    .badge-red { background: #7f1d1d; color: #fee2e2; }
+    .muted { color: #94a3b8; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; background: #0b1220; border: 1px solid #1f2937; border-radius: 8px; padding: 8px; color: #d1d5db; }
+    pre { overflow-x: auto; }
+    a { color: #93c5fd; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
+  <meta name="author" content="SentinelScope" />
+  <meta name="description" content="SentinelScope demo report with rich, readable findings." />
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>SentinelScope Demo Report</h1>
+      <p class="muted">A realistic, shareable snapshot of what SentinelScope surfaces — no terminal required.</p>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>About this page</h2>
+        <p>This is a curated example of the HTML report SentinelScope produces. It’s designed to be <strong>readable by anyone</strong> while remaining <strong>useful to engineers</strong>. Use it to brief stakeholders or as a baseline for hardening work.</p>
+        <ul>
+          <li><strong>No access required:</strong> It’s a static page you can publish via GitHub Pages.</li>
+          <li><strong>Actionable:</strong> Every section hints at what to improve.</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>How to read it</h2>
+        <ul>
+          <li><strong>Green</strong> means “good” or “expected”.</li>
+          <li><strong>Yellow</strong> means “consider improving soon”.</li>
+          <li><strong>Red</strong> means “fix me” or “verify intent”.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Security Headers</h2>
+        <p>Grade: <span class="badge badge-yellow">B</span></p>
+        <table>
+          <thead><tr><th>Header</th><th>Status</th><th>Recommendation</th></tr></thead>
+          <tbody>
+            <tr><td>content-security-policy</td><td>Present</td><td class="muted">Avoid wildcard sources and unsafe-inline</td></tr>
+            <tr><td>strict-transport-security</td><td>Present</td><td class="muted">Consider includeSubDomains and preload</td></tr>
+            <tr><td>x-content-type-options</td><td>Present</td><td class="muted">—</td></tr>
+            <tr><td>x-frame-options</td><td>Present</td><td class="muted">—</td></tr>
+            <tr><td>referrer-policy</td><td>Present</td><td class="muted">—</td></tr>
+            <tr><td>permissions-policy</td><td>Missing</td><td class="muted">Restrict powerful browser features</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>TLS</h2>
+        <p>Protocol: <strong>TLSv1.3</strong></p>
+        <p>Valid: <strong>2025-06-01</strong> → <strong>2026-05-30</strong> (<span class="badge badge-green">340 days</span>)</p>
+        <p><span class="muted">Subject:</span> CN=www.example.com</p>
+        <p><span class="muted">Issuer:</span> Let’s Encrypt R11</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>Open Ports</h2>
+        <p><span class="badge badge-yellow">2 open</span> <span class="muted">(scanned 70)</span></p>
+        <table>
+          <thead><tr><th>Port</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>80</td><td>Open (expected: redirect to 443)</td></tr>
+            <tr><td>443</td><td>Open (expected: HTTPS)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Subdomains</h2>
+        <p class="muted">Discovered via Certificate Transparency and DNS</p>
+        <ul>
+          <li>api.example.com</li>
+          <li>static.example.com</li>
+          <li>cdn.example.com</li>
+          <li>blog.example.com</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h2>DNS Posture</h2>
+        <p><span class="muted">A:</span> 93.184.216.34</p>
+        <p><span class="muted">MX:</span> 10 aspmx.l.google.com</p>
+        <p><span class="muted">SPF:</span> present (<code>v=spf1 include:_spf.google.com -all</code>) <span class="badge badge-green">good</span></p>
+        <p><span class="muted">DMARC:</span> present (<code>p=quarantine</code>) <span class="badge badge-yellow">ok</span></p>
+      </div>
+
+      <div class="card">
+        <h2>Web Preview</h2>
+        <p>Status: <strong>200</strong></p>
+        <p>Title: <strong>Example Domain</strong></p>
+        <p>Server: <span class="muted">ECS (sec/976A)</span></p>
+        <p>Content-Type: <span class="muted">text/html; charset=UTF-8</span></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Potential Subdomain Takeovers</h2>
+      <p class="muted">Heuristic only — verify before remediation.</p>
+      <ul>
+        <li><span class="badge badge-red">flagged</span> pages.example.com — Potential GitHub Pages placeholder detected</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Run it yourself</h2>
+      <pre><code>python3.11 -m venv .venv && source .venv/bin/activate
+pip install -e . -r requirements-dev.txt
+sscan domain example.com --html out/example.html
+open out/example.html</code></pre>
+      <p class="muted">Prefer a button? Publish this file to GitHub Pages and send a link.</p>
+    </div>
+
+    <div class="card">
+      <p class="muted">Generated by SentinelScope — a clean, modern take on recon reporting.</p>
+    </div>
+  </div>
+</body>
+</html>
+
