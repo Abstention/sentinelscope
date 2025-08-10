@@ -12,6 +12,8 @@ class DomainScanRequest(BaseModel):
     scan_subdomains: bool = True
     analyze_headers: bool = True
     analyze_tls: bool = True
+    analyze_dns: bool = True
+    web_preview: bool = True
     port_profile: str = Field(
         default="top30",
         description="One of: top30, top100, custom",
@@ -71,4 +73,39 @@ class DomainScanResult(BaseModel):
     ports: Optional[PortScanResult] = None
     tls: Optional[TLSInfo] = None
     headers: Optional[SecurityHeadersAssessment] = None
+    dns: Optional["DNSAssessment"] = None
+    preview: Optional["WebPreview"] = None
+    takeover: Optional["TakeoverAssessment"] = None
+
+
+class DNSAssessment(BaseModel):
+    domain: str
+    a_records: List[str] = []
+    aaaa_records: List[str] = []
+    mx_records: List[str] = []
+    txt_records: List[str] = []
+    spf_present: bool = False
+    spf_policy: Optional[str] = None  # e.g., -all, ~all, ?all
+    spf_recommendation: Optional[str] = None
+    dmarc_present: bool = False
+    dmarc_policy: Optional[str] = None  # reject | quarantine | none
+    dmarc_recommendation: Optional[str] = None
+
+
+class WebPreview(BaseModel):
+    url: str
+    status_code: Optional[int] = None
+    title: Optional[str] = None
+    server: Optional[str] = None
+    content_type: Optional[str] = None
+
+
+class TakeoverFinding(BaseModel):
+    subdomain: str
+    reason: str
+
+
+class TakeoverAssessment(BaseModel):
+    checked_count: int
+    flagged: List[TakeoverFinding]
 

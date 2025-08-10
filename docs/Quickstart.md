@@ -18,7 +18,7 @@ pip install -e . -r requirements-dev.txt
 ```bash
 pytest -q
 ```
-Expected: `3 passed`
+Expected: `5 passed`
 
 ### First scan (domain)
 ```bash
@@ -31,6 +31,9 @@ What happens:
 - Common ports scanned asynchronously
 - HTTPS security headers analyzed and graded
 - TLS certificate parsed and expiry checked
+- DNS posture (A/AAAA/MX/TXT, SPF/DMARC) assessed
+- Web preview captured (status, title, server)
+- Potential subdomain takeover signatures heuristically flagged
 
 ### Targeted scans
 ```bash
@@ -45,6 +48,14 @@ sscan ports example.com --ports top100 --json out/ports.json
 
 # Custom port list
 sscan ports example.com --ports custom --custom-ports "22,80,443,8443"
+```
+
+### Makefile shortcuts
+```bash
+make setup     # create venv, install
+make test      # run tests
+make run-api   # start API
+make report    # sample report for example.com
 ```
 
 ### Run the API

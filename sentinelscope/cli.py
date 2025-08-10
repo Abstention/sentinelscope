@@ -15,6 +15,9 @@ from sentinelscope.scanning.http_headers import analyze_security_headers
 from sentinelscope.scanning.ports import TOP_30_PORTS, scan_ports
 from sentinelscope.scanning.subdomains import enumerate_subdomains
 from sentinelscope.scanning.tls import get_tls_info
+from sentinelscope.scanning.dns_records import assess_dns
+from sentinelscope.scanning.web_preview import fetch_preview
+from sentinelscope.scanning.takeover import check_takeover_candidates
 from datetime import datetime
 
 
@@ -62,10 +65,18 @@ def domain(
         ports_task = scan_ports(domain, ports_list)
         tls_info = get_tls_info(domain)
         headers_task = analyze_security_headers(f"https://{domain}")
+        dns_info = assess_dns(domain)
+        preview_task = fetch_preview(f"https://{domain}")
 
-        subdomains, ports_res, headers = await asyncio.gather(
-            subdomains_task, ports_task, headers_task
+        subdomains, ports_res, headers, preview = await asyncio.gather(
+            subdomains_task, ports_task, headers_task, preview_task
         )
+
+        takeover = None
+        try:
+            takeover = await check_takeover_candidates(subdomains.discovered)
+        except Exception:
+            takeover = None
 
         finished = datetime.utcnow()
         result = DomainScanResult(
@@ -76,6 +87,9 @@ def domain(
             ports=ports_res,
             tls=tls_info,
             headers=headers,
+            dns=dns_info,
+            preview=preview,
+            takeover=takeover,
         )
 
         # Console summary
@@ -86,6 +100,8 @@ def domain(
         table.add_row("Subdomains", str(len(result.subdomains.discovered) if result.subdomains else 0))
         table.add_row("TLS protocol", result.tls.protocol if result.tls and result.tls.protocol else "n/a")
         table.add_row("Headers grade", result.headers.grade if result.headers else "n/a")
+        table.add_row("SPF present", str(result.dns.spf_present if result.dns else False))
+        table.add_row("DMARC policy", result.dns.dmarc_policy if result.dns else "n/a")
         console.print(table)
 
         if json_out:

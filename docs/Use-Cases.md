@@ -14,12 +14,13 @@ Actions:
 Run a nightly job and compare results.
 ```bash
 sscan domain product.example --json out/nightly.json
-jq '.ports.open_ports, .headers.grade, .tls.days_until_expiry' out/nightly.json
+jq '.ports.open_ports, .headers.grade, .tls.days_until_expiry, .dns.dmarc_policy' out/nightly.json
 ```
 Alert when:
 - New open ports appear
 - Headers grade drops
 - TLS expiry < 30 days
+- DMARC policy weakens (none → quarantine/reject recommended)
 
 ### 3) Hardening a web application
 ```bash
@@ -34,4 +35,12 @@ After firewall or CDN updates:
 sscan ports edge.example.com --ports custom --custom-ports "80,443,8443,9000"
 ```
 Validate only intended ports are exposed.
+
+### 5) Subdomain takeover hygiene
+```bash
+sscan domain corp.example --json out/corp.json
+jq '.takeover.flagged' out/corp.json
+```
+Hand off flagged subdomains to DNS owners for remediation.
+
 

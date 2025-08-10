@@ -3,7 +3,8 @@
 Advanced attack surface recon and security reporting toolkit. Built for cybersecurity professionals to perform fast, asynchronous recon on domains and URLs, assess security headers, analyze TLS posture, enumerate subdomains using Certificate Transparency, scan common ports, and produce polished HTML/JSON reports. Ships with a CLI, REST API, pre-commit hooks, tests, and CI.
 
 ### Highlights
-- **Async recon pipeline**: subdomains, ports, TLS, and HTTP headers in parallel
+- **Async recon pipeline**: subdomains, ports, TLS, HTTP headers, DNS, web preview
+- **Takeover heuristics**: flags potential subdomain takeovers (best-effort)
 - **Actionable reporting**: clean HTML report with charts + machine-readable JSON
 - **Modern stack**: Python 3.11+, FastAPI, Typer, Pydantic v2, Jinja2, Rich
 - **Secure defaults**: timeouts, safe parsing, input validation
@@ -51,6 +52,9 @@ sscan ports HOST [--ports top100|top30|custom --custom-ports "22,80,443" --json 
 - **Ports**: Async TCP connect scan against curated common ports
 - **TLS**: Certificate subject/issuer, SANs, expiry, validity window, protocol used
 - **HTTP Security Headers**: Presence/quality of CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, etc., with a letter grade
+- **DNS**: A/AAAA/MX/TXT posture, SPF/DMARC presence and recommendations
+- **Web Preview**: HTTP status, title, server, content-type
+- **Takeover**: Heuristic signatures for common providers
 
 ### Project Structure
 ```

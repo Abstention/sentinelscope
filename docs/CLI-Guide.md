@@ -19,6 +19,11 @@ Options:
 - `--ports`: `top30`, `top100`, or `custom`
 - `--custom-ports`: CSV list, e.g., `"22,80,443,8443"` (required when `--ports custom`)
 
+Outputs include:
+- DNS: A/AAAA/MX/TXT, SPF/DMARC posture
+- Web Preview: status code, title, server, content-type
+- Takeover: flagged subdomains with provider signatures
+
 ### Individual commands
 ```bash
 # Security headers

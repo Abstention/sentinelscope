@@ -38,3 +38,14 @@ jobs:
           path: out/
 ```
 
+### 5) Mail posture snapshot
+```bash
+sscan domain example.com --json out/mail.json
+jq '{spf_present: .dns.spf_present, spf_policy: .dns.spf_policy, dmarc: .dns.dmarc_policy}' out/mail.json
+```
+
+### 6) Takeover signatures to CSV
+```bash
+sscan domain example.com --json - | jq -r '.takeover.flagged[] | "\(.subdomain),\(.reason)"' > flagged.csv
+```
+

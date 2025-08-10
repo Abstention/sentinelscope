@@ -20,6 +20,9 @@ HTML includes:
 - TLS details and warnings (e.g., impending expiry)
 - Open ports table (or “none found” badge)
 - Subdomain list with source counts
+- DNS section (A/AAAA/MX, SPF/DMARC posture & recommendations)
+- Web preview (status/title/server/content-type)
+- Potential subdomain takeovers list
 
 ### Embedding in pipelines
 - Store JSON artifacts for machine processing

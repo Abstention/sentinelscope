@@ -15,6 +15,14 @@ python3.11 -m pytest -q
 - CT logs may be sparse for new domains
 - Add more wordlist entries in `sentinelscope/scanning/subdomains.py`
 
+### DNS/DMARC/SPF missing
+- Some providers publish records at subdomains (e.g., `_dmarc.example.com`); ensure delegation is correct
+- Check with authoritative DNS or dig as a cross-check
+
+### Takeover false positives
+- Heuristics are best-effort. Manually verify flagged hosts before actionable remediation
+- Add or tune signatures in `sentinelscope/scanning/takeover.py`
+
 ### HTML report missing
 Ensure templates packaged:
 ```bash

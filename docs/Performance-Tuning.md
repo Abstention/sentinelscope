@@ -10,6 +10,9 @@ The defaults are conservative. You can increase speed safely with care.
 - DNS resolution concurrency ~50; increase to 100–200 with reliable DNS
 - Add more wordlist entries for depth (at cost of time)
 
+### DNS
+- Queries are synchronous; bulk DNS may benefit from local caching resolvers
+
 ### HTTP headers
 - Already fast; consider batching multiple URLs via shell loops
 
@@ -22,4 +25,5 @@ uvicorn sentinelscope.api:app --host 0.0.0.0 --port 8000 --workers 4
 ### Resource considerations
 - Avoid overloading targets; throttle in sensitive environments
 - In CI, shard targets across jobs
+ - Takeover checks cap at ~200 subdomains to avoid excessive HTTP requests
 

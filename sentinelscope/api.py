@@ -10,6 +10,9 @@ from sentinelscope.scanning.http_headers import analyze_security_headers
 from sentinelscope.scanning.ports import TOP_30_PORTS, scan_ports
 from sentinelscope.scanning.subdomains import enumerate_subdomains
 from sentinelscope.scanning.tls import get_tls_info
+from sentinelscope.scanning.dns_records import assess_dns
+from sentinelscope.scanning.web_preview import fetch_preview
+from sentinelscope.scanning.takeover import check_takeover_candidates
 
 
 app = FastAPI(title="SentinelScope API", version="0.1.0")
@@ -39,10 +42,19 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
     ports_task = scan_ports(req.domain, ports_list) if req.scan_ports else None
     headers_task = analyze_security_headers(f"https://{req.domain}") if req.analyze_headers else None
     tls_info = get_tls_info(req.domain) if req.analyze_tls else None
+    dns_info = assess_dns(req.domain) if req.analyze_dns else None
+    preview_task = fetch_preview(f"https://{req.domain}") if req.web_preview else None
 
     subdomains_res = await subdomains_task if subdomains_task else None
     ports_res = await ports_task if ports_task else None
     headers_res = await headers_task if headers_task else None
+    preview_res = await preview_task if preview_task else None
+    takeover_res = None
+    if subdomains_res:
+        try:
+            takeover_res = await check_takeover_candidates(subdomains_res.discovered)
+        except Exception:
+            takeover_res = None
 
     finished = datetime.utcnow()
     return DomainScanResult(
@@ -53,5 +65,8 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
         ports=ports_res,
         tls=tls_info,
         headers=headers_res,
+        dns=dns_info,
+        preview=preview_res,
+        takeover=takeover_res,
     )
 

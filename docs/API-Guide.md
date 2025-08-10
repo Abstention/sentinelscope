@@ -22,6 +22,8 @@ Visit `http://localhost:8000/docs` to explore and try requests.
   "scan_subdomains": true,
   "analyze_headers": true,
   "analyze_tls": true,
+  "analyze_dns": true,
+  "web_preview": true,
   "port_profile": "top30",
   "custom_ports": null
 }
@@ -36,5 +38,9 @@ curl -sX POST http://localhost:8000/scan/domain \
 ```
 
 ### Response
-Returns `DomainScanResult` with subdomains, ports, tls, headers and timestamps.
+Returns `DomainScanResult` with:
+- `subdomains`, `ports`, `tls`, `headers`
+- `dns` (SPF/DMARC, A/AAAA/MX/TXT)
+- `preview` (status/title/server/content-type)
+- `takeover` (flagged subdomains)
 
