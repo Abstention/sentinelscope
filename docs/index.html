@@ -8,6 +8,323 @@
   <meta name="theme-color" content="#0f172a" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --bg:#0f172a; --surface:#0b1220; --card:#111827; --elev:#0c1425; --border:#1f2937; --hr:#1e293b;
+      --text:#e2e8f0; --muted:#94a3b8; --link:#93c5fd; --good:#10b981; --warn:#f59e0b; --bad:#ef4444;
+      --shadow: 0 1px 0 rgba(0,0,0,.06), 0 10px 20px rgba(0,0,0,.2);
+    }
+    @media (prefers-color-scheme: light) {
+      :root { --bg:#ffffff; --surface:#ffffff; --card:#f8fafc; --elev:#ffffff; --border:#e5e7eb; --hr:#e5e7eb; --text:#0f172a; --muted:#475569; --link:#1d4ed8; }
+    }
+    html { scroll-behavior: smooth; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; line-height: 1.65; }
+    a { color: var(--link); text-decoration: none; }
+    a:hover{ text-decoration: underline; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
+
+    /* Header / Nav */
+    .header { position: sticky; top: 0; z-index: 50; background: rgba(15,23,42,.75); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+    @media (prefers-color-scheme: light) { .header { background: rgba(255,255,255,.8); } }
+    .nav { display:flex; align-items:center; gap:16px; max-width:1100px; margin:0 auto; padding: 12px 20px; }
+    .brand { font-weight: 700; letter-spacing: .2px; }
+    .spacer { flex:1; }
+    .nav a { color: var(--muted); font-size: 14px; padding: 6px 8px; border-radius: 8px; }
+    .nav a:hover { background: rgba(148,163,184,.12); color: var(--text); text-decoration: none; }
+
+    /* Cards and sections */
+    .section { margin: 18px 0; }
+    .card { background: var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; box-shadow: var(--shadow); }
+    h1 { font-size: 28px; margin: 0 0 6px; letter-spacing: .2px; }
+    h2 { font-size: 22px; margin: 0 0 10px; letter-spacing: .2px; }
+    h3 { font-size: 18px; margin: 0 0 8px; letter-spacing: .2px; }
+    p { margin: 8px 0; }
+    .lead { color: var(--muted); font-size: 15px; }
+    .muted { color: var(--muted); }
+    .hr { height:1px; background: var(--hr); margin: 14px 0; }
+
+    /* Grids */
+    .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
+    .grid-3 { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; }
+    @media (max-width: 980px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* UI tokens */
+    .badge { display:inline-block; padding:4px 10px; border-radius:999px; font-weight:700; font-size:12px; }
+    .good { background:#065f46; color:#d1fae5; }
+    .warn { background:#78350f; color:#ffedd5; }
+    .bad  { background:#7f1d1d; color:#fee2e2; }
+    .pill { display:inline-block; background: rgba(148,163,184,.12); border:1px solid var(--border); padding:6px 10px; border-radius:999px; }
+    .kv { display:flex; gap:10px; flex-wrap: wrap; }
+    .kv .item { background: var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
+    .callout { border-left:4px solid; padding:10px 12px; border-radius:8px; margin: 10px 0; }
+    .info { border-color:#2563eb; background: rgba(37,99,235,.08); }
+    .note { border-color:#14b8a6; background: rgba(20,184,166,.08); }
+    .warnc { border-color:#f59e0b; background: rgba(245,158,11,.08); }
+    .crit { border-color:#ef4444; background: rgba(239,68,68,.08); }
+
+    /* Tables */
+    table { width:100%; border-collapse: collapse; }
+    th, td { border-bottom:1px solid var(--border); text-align:left; padding:10px 8px; vertical-align: top; }
+    thead th { position: sticky; top: 52px; background: var(--card); z-index: 1; }
+    tr:nth-child(2n) td { background: rgba(148,163,184,.05); }
+
+    /* Details */
+    details { border:1px dashed var(--border); border-radius:10px; padding:10px 12px; background: var(--surface); }
+    summary { cursor:pointer; font-weight:600; letter-spacing: .2px; }
+
+    /* Utilities */
+    .small { font-size: 13px; }
+    .center { display:flex; align-items:center; justify-content:center; }
+    .top { position: fixed; right: 18px; bottom: 18px; }
+    .btn { background: var(--surface); border:1px solid var(--border); color: var(--text); border-radius: 999px; padding: 10px 14px; cursor: pointer; box-shadow: var(--shadow); }
+    .btn:hover{ background: rgba(148,163,184,.12); }
+
+    /* Print */
+    @media print {
+      .header, .top { display:none; }
+      .card { box-shadow: none; }
+      thead th { position: static; }
+    }
+  </style>
+</head>
+<body>
+  <header class="header" role="navigation" aria-label="Section navigation">
+    <nav class="nav">
+      <div class="brand">Website Security Checkup</div>
+      <div class="spacer"></div>
+      <a href="#summary">Summary</a>
+      <a href="#basics">Basics</a>
+      <a href="#fix">Fix first</a>
+      <a href="#findings">Findings</a>
+      <a href="#email">Email safety</a>
+      <a href="#faq">FAQ</a>
+      <a href="#keep">Keep green</a>
+    </nav>
+  </header>
+
+  <main class="wrap" role="main">
+    <section class="section card" aria-labelledby="hero-title">
+      <h1 id="hero-title">Website Security Checkup</h1>
+      <p class="lead">A plain‑English, shareable report. No jargon required: we explain what was checked, why it matters, and what to do next.</p>
+      <div class="kv small" aria-label="At‑a‑glance">
+        <div class="item">Overall status: <strong>Healthy with improvements</strong> <span class="badge warn">Needs attention</span></div>
+        <div class="item">Last checkup: <strong>Today</strong></div>
+        <div class="item">Audience: <strong>Non‑technical stakeholders</strong></div>
+      </div>
+    </section>
+
+    <section id="summary" class="section card" aria-labelledby="summary-title">
+      <div class="grid-2">
+        <div class="center"><canvas id="scoreChart" width="260" height="260" aria-label="Overall score"></canvas></div>
+        <div>
+          <h2 id="summary-title">Summary</h2>
+          <p>Big picture: your website uses modern <strong>encryption</strong>, only the expected <strong>doors (ports)</strong> are open, and most <strong>safety settings</strong> are in place. A few small changes will improve protection and reduce risk of phishing and misuse.</p>
+          <ul>
+            <li><strong>Website safety settings</strong> (browser rules): Grade <strong>B</strong> <span class="badge warn">Needs attention</span></li>
+            <li><strong>Encryption</strong> (HTTPS): <strong>Up‑to‑date</strong> <span class="badge good">Good</span></li>
+            <li><strong>Open doors</strong> (ports): <strong>Expected</strong> <span class="badge good">Good</span></li>
+            <li><strong>Email safety</strong> (SPF/DMARC): <strong>OK</strong> <span class="badge warn">Needs attention</span></li>
+            <li><strong>Broken signposts</strong> (takeovers): <strong>One to review</strong> <span class="badge warn">Check</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section id="basics" class="section card" aria-labelledby="basics-title">
+      <h2 id="basics-title">Internet basics (in 2 minutes)</h2>
+      <div class="grid-3 small">
+        <div>
+          <h3>Addresses (DNS)</h3>
+          <p>DNS is the internet’s address book. When you type your website name, DNS tells browsers where to go.</p>
+          <details>
+            <summary>More about DNS</summary>
+            <p><strong>A records</strong> point to a server address (IP). <strong>MX records</strong> direct email delivery. <strong>TXT records</strong> carry policies like SPF and DMARC to stop email spoofing.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Locks and keys (HTTPS)</h3>
+          <p>HTTPS is the “lock” icon. It encrypts traffic so others can’t read or change it in transit.</p>
+          <details>
+            <summary>More about HTTPS</summary>
+            <p><strong>TLS</strong> is the modern lock. We check it’s current and not expiring soon. Latest is <strong>TLS 1.3</strong>.</p>
+          </details>
+        </div>
+        <div>
+          <h3>Doors (Ports)</h3>
+          <p>Ports are doors into your system. For public sites, only 80 (web) and 443 (secure web) usually need to be open.</p>
+          <details>
+            <summary>More about ports</summary>
+            <p>We quickly test common doors to confirm only the ones you expect are available.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="fix" class="section card" aria-labelledby="fix-title">
+      <h2 id="fix-title">What to fix first</h2>
+      <ol>
+        <li><strong>Add a Permissions‑Policy</strong> to limit powerful features (camera, mic, etc.).</li>
+        <li><strong>Tighten your Content‑Security‑Policy</strong> (avoid wildcards and “unsafe‑inline”).</li>
+        <li><strong>Enhance HSTS</strong> (includeSubDomains + preload) if it fits your rollout plan.</li>
+        <li><strong>Move DMARC to “reject”</strong> once confident, so spoofed emails are blocked not just flagged.</li>
+        <li><strong>Review any flagged takeover</strong> — remove unused DNS or publish content with the provider.</li>
+      </ol>
+      <div class="callout note small"><strong>Why it matters:</strong> These steps reduce phishing risk, prevent common web attacks, and improve trust.</div>
+    </section>
+
+    <section id="findings" class="section card" aria-labelledby="findings-title">
+      <h2 id="findings-title">Findings (explained in plain English)</h2>
+      <div class="grid-2">
+        <div class="card">
+          <h3>Website safety settings <span class="badge warn">Grade: B</span></h3>
+          <p class="small">These are rules the browser follows to keep users safe. Stronger rules mean fewer chances for attackers.</p>
+          <table>
+            <thead><tr><th>Setting</th><th>Status</th><th>What it means</th><th>What to consider</th></tr></thead>
+            <tbody>
+              <tr><td>Content‑Security‑Policy</td><td>Present</td><td>Limits where scripts, images, etc. load from.</td><td>Avoid wildcards; don’t use “unsafe‑inline”.</td></tr>
+              <tr><td>Strict‑Transport‑Security</td><td>Present</td><td>Forces browsers to use HTTPS.</td><td>Add includeSubDomains; consider preload.</td></tr>
+              <tr><td>X‑Content‑Type‑Options</td><td>Present</td><td>Prevents browsers guessing file types.</td><td>Good as is.</td></tr>
+              <tr><td>X‑Frame‑Options</td><td>Present</td><td>Stops clickjacking via iframes.</td><td>Good as is.</td></tr>
+              <tr><td>Referrer‑Policy</td><td>Present</td><td>Controls info sent when clicking links.</td><td>Good as is.</td></tr>
+              <tr><td>Permissions‑Policy</td><td>Missing</td><td>Controls access to camera, mic, and other powerful features.</td><td>Add a conservative policy.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card">
+          <h3>Encryption (HTTPS/TLS) <span class="badge good">Good</span></h3>
+          <p class="small">This is the “lock” in the browser. Your site uses modern encryption and the certificate looks healthy.</p>
+          <ul class="small">
+            <li>Protocol: TLS 1.3 (latest)</li>
+            <li>Certificate validity: ~340 days left</li>
+            <li>Issuer: Let’s Encrypt (widely trusted)</li>
+          </ul>
+          <details class="small"><summary>Why it matters</summary>
+            <p>Encryption prevents snooping and tampering, especially on public Wi‑Fi. Keeping it current ensures stronger protection.</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Open doors (Ports) <span class="badge good">Expected</span></h3>
+          <p class="small">Only the expected doors for a website are open. That’s what we want.</p>
+          <table>
+            <thead><tr><th>Port</th><th>What it’s for</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td>80</td><td>Standard web traffic (usually redirects to HTTPS)</td><td>Open</td><td>OK</td></tr>
+              <tr><td>443</td><td>Secure web traffic (HTTPS)</td><td>Open</td><td>OK</td></tr>
+            </tbody>
+          </table>
+          <details class="small"><summary>Why it matters</summary>
+            <p>Extra doors (like database ports) on the internet increase risk. Keeping only web doors open reduces exposure.</p>
+          </details>
+        </div>
+        <div class="card">
+          <h3>Addresses on the internet (DNS & Email) <span class="badge warn">OK</span></h3>
+          <p class="small">These records tell browsers and email where to go. Extra settings help block email spoofing.</p>
+          <ul class="small">
+            <li>A record: 93.184.216.34</li>
+            <li>Mail record (MX): Google Workspace</li>
+            <li>SPF: present (approved senders only) <span class="badge good">Good</span></li>
+            <li>DMARC: quarantine (mark suspicious emails) <span class="badge warn">OK</span> → consider “reject” later</li>
+          </ul>
+          <details class="small"><summary>Why it matters</summary>
+            <p>SPF and DMARC help mail providers detect and block fake emails pretending to be you. “Reject” is the strongest stance once you’re ready.</p>
+          </details>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Other site addresses (Subdomains)</h3>
+          <p class="small">These are additional places your brand lives, like <code>api.example.com</code> or <code>blog.example.com</code>.</p>
+          <ul class="small">
+            <li>api.example.com</li>
+            <li>static.example.com</li>
+            <li>cdn.example.com</li>
+            <li>blog.example.com</li>
+          </ul>
+          <details class="small"><summary>Why it matters</summary>
+            <p>Each subdomain can host its own app. Keeping track of them helps avoid forgotten sites and reduces surprises.</p>
+          </details>
+        </div>
+        <div class="card">
+          <h3>Broken signposts (Takeovers) <span class="badge warn">Check</span></h3>
+          <p class="small">Sometimes a name points to a provider with no site attached yet. Attackers can claim it if left dangling.</p>
+          <ul class="small">
+            <li><span class="badge bad">Flagged</span> pages.example.com — looks like a placeholder at a third‑party host.</li>
+          </ul>
+          <details class="small"><summary>What to do</summary>
+            <p>Either remove the DNS entry (if unused) or publish the site at the provider. That closes the gap.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section id="email" class="section card" aria-labelledby="email-title">
+      <h2 id="email-title">Email safety 101 (SPF & DMARC)</h2>
+      <p><strong>Goal:</strong> Make it hard for scammers to send fake emails that look like they’re from you.</p>
+      <ul>
+        <li><strong>SPF</strong>: who’s allowed to send on your behalf. If it’s not on the list, it should be rejected.</li>
+        <li><strong>DMARC</strong>: what to do with suspicious emails (monitor, quarantine, reject).</li>
+      </ul>
+      <div class="callout info small"><strong>Recommended path:</strong> Start with “quarantine”, then move to “reject” once all legitimate senders are covered.</div>
+    </section>
+
+    <section id="faq" class="section card" aria-labelledby="faq-title">
+      <h2 id="faq-title">FAQ</h2>
+      <details>
+        <summary>Will these changes break my site?</summary>
+        <p>Changes like CSP and HSTS should be tested in staging first. Start strict, then loosen carefully if needed.</p>
+      </details>
+      <details>
+        <summary>How often should we run this?</summary>
+        <p>Monthly is a good cadence, plus after major launches or DNS changes.</p>
+      </details>
+      <details>
+        <summary>We use a CDN — does that help?</summary>
+        <p>Yes. CDNs often improve security and performance. This report still checks your visible setup.</p>
+      </details>
+    </section>
+
+    <section id="keep" class="section card" aria-labelledby="keep-title">
+      <h2 id="keep-title">Keep it green</h2>
+      <ul>
+        <li>Re‑run this checkup regularly or after big changes.</li>
+        <li>Document who owns each subdomain and app.</li>
+        <li>Review email deliverability when tightening SPF/DMARC.</li>
+      </ul>
+      <p class="muted small">Demo content is representative. Always scan your own domain with approval.</p>
+    </section>
+  </main>
+
+  <a href="#hero-title" class="top btn" aria-label="Back to top">↑ Top</a>
+
+  <script>
+    const scoreCtx = document.getElementById('scoreChart');
+    if (scoreCtx && window.Chart) {
+      const score = 82;
+      new Chart(scoreCtx, {
+        type: 'doughnut',
+        data: { labels: ['Score','Remaining'], datasets: [{ data: [score, 100-score], backgroundColor: ['#10b981', '#1f2937'] }] },
+        options: { plugins: { legend: { display: false } } }
+      });
+    }
+  </script>
+</body>
+</html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Website Security Checkup – A Plain‑English Report</title>
+  <meta name="description" content="A clear, non‑technical security checkup that explains what was checked, what it means, and what to do next." />
+  <meta name="theme-color" content="#0f172a" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
