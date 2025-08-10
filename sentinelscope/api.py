@@ -56,7 +56,7 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
             host = raw.replace("https://", "").replace("http://", "").strip('/')
     else:
         host = raw.strip('/')
-    # Preserve scheme if provided; default to https
+    # Preserve scheme if provided; otherwise choose a sensible default
     scheme = "https"
     if raw.startswith("http://") or raw.startswith("https://"):
         try:
@@ -67,6 +67,9 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
                 scheme = parsed.scheme
         except Exception:
             pass
+    else:
+        if host in {"localhost", "127.0.0.1", "::1"}:
+            scheme = "http"
     base_url = f"{scheme}://{host}"
     ports_list = TOP_30_PORTS
     if req.port_profile == "top100":

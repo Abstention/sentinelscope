@@ -129,7 +129,7 @@ def domain(
                 host = raw.replace("https://", "").replace("http://", "").strip('/')
         else:
             host = raw.strip('/')
-        # Preserve scheme if provided; default to https
+        # Preserve scheme if provided; otherwise choose a sensible default
         scheme = "https"
         if raw.startswith("http://") or raw.startswith("https://"):
             try:
@@ -140,6 +140,10 @@ def domain(
                     scheme = parsed.scheme
             except Exception:
                 pass
+        else:
+            # Default to HTTP for localhost/loopback, HTTPS otherwise
+            if host in {"localhost", "127.0.0.1", "::1"}:
+                scheme = "http"
         base_url = f"{scheme}://{host}"
         ports_list = _resolve_ports(ports, custom_ports)
 

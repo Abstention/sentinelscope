@@ -3,242 +3,203 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SentinelScope Report – {{ result.domain }}</title>
-  <meta name="description" content="Clean, readable security report for {{ result.domain }}" />
-  <style>
-    :root {
-      --bg:#0f172a; --surface:#0b1220; --card:#111827; --border:#1f2937; --text:#e2e8f0; --muted:#94a3b8;
-      --good:#10b981; --warn:#f59e0b; --bad:#ef4444; --accent:#3b82f6;
-    }
-    @media (prefers-color-scheme: light) {
-      :root { --bg:#ffffff; --surface:#ffffff; --card:#f8fafc; --border:#e5e7eb; --text:#0f172a; --muted:#475569; }
-    }
-    html { scroll-behavior: smooth; }
-    body { margin:0; background:var(--bg); color:var(--text); font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif; line-height: 1.6; }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1100px; margin: 0 auto; padding: 20px; }
-    .header { display:flex; align-items:center; justify-content:space-between; gap: 12px; padding: 12px 0; }
-    .title { font-weight: 700; letter-spacing: .2px; margin: 0; font-size: 22px; }
-    .meta { color: var(--muted); font-size: 14px; }
-    .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
-    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
-    .card { background: var(--card); border:1px solid var(--border); border-radius: 14px; padding: 16px; }
-    h2 { margin: 0 0 10px; font-size: 18px; letter-spacing: .2px; }
-    h3 { margin: 0 0 8px; font-size: 16px; }
-    .muted { color: var(--muted); }
-    .pill { display:inline-block; background: rgba(148,163,184,.12); border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size: 13px; }
-    .badge { display:inline-block; padding: 4px 10px; border-radius:999px; font-weight:700; font-size:12px; }
-    .good { background:#065f46; color:#d1fae5; }
-    .warn { background:#78350f; color:#ffedd5; }
-    .bad  { background:#7f1d1d; color:#fee2e2; }
-    .kvs { display:flex; gap:10px; flex-wrap:wrap; }
-    .kvs .item { background: var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size: 14px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { border-bottom:1px solid var(--border); text-align:left; padding:10px 8px; vertical-align: top; }
-    thead th { position: sticky; top: 0; background: var(--card); z-index: 1; }
-    tr:nth-child(2n) td { background: rgba(148,163,184,.05); }
-    .list { margin:0; padding-left: 18px; }
-    .hr { height:1px; background: var(--border); margin: 14px 0; }
-    /* Score ring */
-    .ring { --p: 0; width: 120px; height: 120px; border-radius: 50%; background:
-      conic-gradient(var(--good) calc(var(--p)*1%), rgba(148,163,184,.15) 0);
-      display:grid; place-items:center; }
-    .ring span { font-weight:700; }
-  </style>
-  <meta name="color-scheme" content="dark light" />
-  <meta name="author" content="SentinelScope" />
+  <title>SentinelScope Report — {{ result.domain }}</title>
   <meta name="robots" content="noindex" />
-  <script>
-    // No external deps; JS only to set score ring from inline data
-    document.addEventListener('DOMContentLoaded', () => {
-      const el = document.getElementById('scoreRing');
-      if (!el) return;
-      const score = Number(el.getAttribute('data-score') || '0');
-      el.style.setProperty('--p', Math.max(0, Math.min(100, score)));
-    });
-  </script>
+  <style>
+    /* Minimal, programmer-friendly layout */
+    :root {
+      --fg:#111827; --bg:#ffffff; --muted:#6b7280; --line:#e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root { --fg:#e5e7eb; --bg:#0b1020; --muted:#9aa4b2; --line:#1f2937; }
+    }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--fg); }
+    body { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:14px; line-height:1.5; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 16px; }
+    h1, h2, h3 { margin: 0 0 6px; font-weight: 700; }
+    h1 { font-size: 18px; }
+    h2 { font-size: 16px; margin-top: 14px; }
+    h3 { font-size: 14px; margin-top: 10px; }
+    .muted { color: var(--muted); }
+    .sep { height:1px; background: var(--line); margin: 10px 0; }
+    .block { padding: 8px 0; }
+    .kv { display: grid; grid-template-columns: 180px 1fr; gap: 8px 16px; }
+    .kv div { padding: 2px 0; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid var(--line); padding:6px 8px; vertical-align: top; text-align:left; }
+    .small { font-size: 12px; }
+    ul { margin: 6px 0; }
+    code { background: rgba(125,125,125,.08); padding: 1px 4px; border-radius: 3px; }
+    .mono { font-family: inherit; }
+    details summary { cursor: pointer; }
+  </style>
 </head>
 <body>
   <div class="wrap">
-    <header class="header">
-      <h1 class="title">SentinelScope Report</h1>
-      <div class="meta">Target: <strong>{{ result.domain }}</strong> · Started: {{ result.started_at }} · Finished: {{ result.finished_at }}</div>
-    </header>
+    <h1>SentinelScope Report — {{ result.domain }}</h1>
+    <div class="small muted">Started: {{ result.started_at }} | Finished: {{ result.finished_at }}</div>
+    <div class="sep"></div>
 
-    <section class="card">
-      <div class="grid-2">
-        <div style="display:flex; align-items:center; gap:16px;">
-          {% if result.headers and result.headers.grade != 'N/A' %}
-          <div id="scoreRing" class="ring" data-score="{{ result.headers.score }}"><span>{{ result.headers.score }}%</span></div>
-          {% else %}
-          <div class="pill">No header score</div>
-          {% endif %}
-          <div>
-            <div class="kvs">
-              <div class="item">Headers grade: <strong>{{ result.headers.grade if result.headers else 'n/a' }}</strong></div>
-              <div class="item">TLS: <strong>{{ result.tls.protocol if result.tls and result.tls.protocol else 'n/a' }}</strong></div>
-              <div class="item">Open ports: <strong>{{ result.ports.open_ports|length if result.ports else 0 }}</strong></div>
-              <div class="item">Subdomains: <strong>{{ result.subdomains.discovered|length if result.subdomains else 0 }}</strong></div>
-            </div>
-            <div class="hr"></div>
-            <div class="kvs">
-              <div class="item">SPF: <strong>{{ 'present' if result.dns and result.dns.spf_present else 'missing' }}</strong></div>
-              <div class="item">DMARC: <strong>{{ result.dns.dmarc_policy if result.dns and result.dns.dmarc_present else 'missing' }}</strong></div>
-              <div class="item">AXFR open NS: <strong>{{ result.dns_axfr.axfr_allowed_on|length if result.dns_axfr else 0 }}</strong></div>
-            </div>
-          </div>
-        </div>
+    <div class="block">
+      <h2>Overview</h2>
+      <div class="kv">
+        <div>Headers grade</div>
         <div>
-          {% if result.preview %}
-          <h3>Web preview</h3>
-          <p>Status: <strong>{{ result.preview.status_code or 'n/a' }}</strong></p>
-          <p>Title: <strong>{{ result.preview.title or 'n/a' }}</strong></p>
-          <p class="muted">Server: {{ result.preview.server or 'n/a' }} · Type: {{ result.preview.content_type or 'n/a' }}</p>
-          {% else %}
-          <h3>Web preview</h3>
-          <p class="muted">Not available</p>
-          {% endif %}
+          {% if result.headers %}
+            {{ result.headers.grade }}{% if result.headers.grade != 'N/A' %} ({{ result.headers.score }}%){% endif %}
+          {% else %}n/a{% endif %}
+        </div>
+        <div>Summary</div>
+        <div class="small muted">
+          Grades reflect the presence and quality of core browser protections (CSP, HSTS, etc.).
+          Public sites should aim for A. Auth/PII/payment flows should target A+.
+          Some findings are judgement calls; use context and threat model.
+        </div>
+        <div>TLS protocol</div>
+        <div>{{ result.tls.protocol if result.tls and result.tls.protocol else 'n/a' }}</div>
+        <div>Open ports</div>
+        <div>{{ result.ports.open_ports|length if result.ports else 0 }}</div>
+        <div>Subdomains</div>
+        <div>{{ result.subdomains.discovered|length if result.subdomains else 0 }}</div>
+        <div>SPF / DMARC</div>
+        <div>
+          {% if result.dns %}
+            SPF: {{ 'present' if result.dns.spf_present else 'missing' }} | DMARC: {{ result.dns.dmarc_policy if result.dns.dmarc_present else 'missing' }}
+          {% else %}n/a{% endif %}
         </div>
       </div>
-    </section>
+    </div>
 
-    <section class="grid-2">
-      <div class="card">
-        <h2>Security headers</h2>
-        {% if result.headers %}
-        <table>
+    <div class="sep"></div>
+
+    <div class="block" id="headers">
+      <h2>Security headers</h2>
+      <div class="small muted">Browsers use these headers to block common attacks. "Improve" suggests safer defaults.</div>
+      {% if result.headers %}
+        <div class="kv" style="margin:6px 0 8px;">
+          <div>Grade / Score</div><div>{{ result.headers.grade }} / {{ result.headers.score }}</div>
+        </div>
+        <table class="mono">
           <thead><tr><th>Header</th><th>Status</th><th>Recommendation</th></tr></thead>
           <tbody>
             {% for f in result.headers.findings %}
             <tr>
               <td>{{ f.header }}</td>
               <td>
-                {% if f.present and not f.recommendation %}<span class="badge good">Present</span>
-                {% elif f.present and f.recommendation %}<span class="badge warn">Improve</span>
-                {% else %}<span class="badge bad">Missing</span>{% endif %}
+                {% if f.present and not f.recommendation %}Present
+                {% elif f.present and f.recommendation %}Improve
+                {% else %}Missing{% endif %}
               </td>
-              <td class="muted">{{ f.recommendation or '' }}</td>
+              <td class="small">{{ f.recommendation or '' }}</td>
             </tr>
             {% endfor %}
           </tbody>
         </table>
-        {% else %}
-        <p class="muted">No header analysis</p>
-        {% endif %}
-      </div>
+      {% else %}
+        <div class="small muted">No header analysis.</div>
+      {% endif %}
+    </div>
 
-      <div class="card">
-        <h2>TLS</h2>
-        {% if result.tls %}
-          <p>Protocol: <strong>{{ result.tls.protocol or 'n/a' }}</strong></p>
-          <p>Valid: <strong>{{ result.tls.valid_from or 'n/a' }}</strong> → <strong>{{ result.tls.valid_to or 'n/a' }}</strong> ({{ result.tls.days_until_expiry if result.tls.days_until_expiry is not none else 'n/a' }} days)</p>
-          <p class="muted">Subject: {{ result.tls.subject or {} }} · Issuer: {{ result.tls.issuer or {} }}</p>
+    <div class="block" id="tls">
+      <h2>TLS (HTTPS)</h2>
+      {% if result.tls %}
+      <table class="mono">
+        <tbody>
+          <tr><td>Protocol</td><td>{{ result.tls.protocol or 'n/a' }}</td></tr>
+          <tr><td>Valid from</td><td>{{ result.tls.valid_from or 'n/a' }}</td></tr>
+          <tr><td>Valid to</td><td>{{ result.tls.valid_to or 'n/a' }}</td></tr>
+          <tr><td>Days until expiry</td><td>{{ result.tls.days_until_expiry if result.tls.days_until_expiry is not none else 'n/a' }}</td></tr>
+          <tr><td>Subject</td><td class="small">{{ result.tls.subject or {} }}</td></tr>
+          <tr><td>Issuer</td><td class="small">{{ result.tls.issuer or {} }}</td></tr>
           {% if result.tls.warnings %}
-          <p><span class="badge warn">{{ result.tls.warnings|length }} warning(s)</span></p>
-          <ul class="list">
-            {% for w in result.tls.warnings %}<li>{{ w }}</li>{% endfor %}
-          </ul>
+          <tr><td>Warnings</td><td>
+            <ul class="small">{% for w in result.tls.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+          </td></tr>
           {% endif %}
-        {% else %}
-          <p class="muted">No TLS info</p>
-        {% endif %}
-      </div>
-    </section>
+        </tbody>
+      </table>
+      {% else %}
+        <div class="small muted">No TLS info.</div>
+      {% endif %}
+    </div>
 
-    <section class="grid-2">
-      <div class="card">
-        <h2>Open ports</h2>
-        {% if result.ports %}
-          {% if result.ports.open_ports %}
-          <p class="muted">{{ result.ports.open_ports|length }} open · scanned {{ result.ports.ports_scanned|length }} ports</p>
-          <table>
-            <thead><tr><th>Port</th><th>Status</th></tr></thead>
-            <tbody>
-            {% for r in result.ports.results %}
-              <tr>
-                <td>{{ r.port }}</td>
-                <td>{% if r.is_open %}<span class="badge warn">Open</span>{% else %}<span class="badge good">Closed</span>{% endif %}</td>
-              </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-            <p><span class="badge good">No open common ports</span></p>
-          {% endif %}
-        {% else %}
-          <p class="muted">No port scan</p>
-        {% endif %}
-      </div>
+    <div class="block" id="ports">
+      <h2>Open ports</h2>
+      {% if result.ports %}
+        <div class="small muted">{{ result.ports.open_ports|length }} open · scanned {{ result.ports.ports_scanned|length }} ports</div>
+        <div class="small">Open: {% if result.ports.open_ports %}<code>{{ result.ports.open_ports | join(', ') }}</code>{% else %}<span class="muted">none</span>{% endif %}</div>
+        <details>
+          <summary class="small">View full results (all scanned ports)</summary>
+          <div style="margin-top:8px;">
+            <table class="mono">
+              <thead><tr><th>Port</th><th>Status</th></tr></thead>
+              <tbody>
+                {% for r in result.ports.results %}
+                <tr><td>{{ r.port }}</td><td>{% if r.is_open %}Open{% else %}Closed{% endif %}</td></tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </details>
+      {% else %}
+        <div class="small muted">No port scan.</div>
+      {% endif %}
+    </div>
 
-      <div class="card">
-        <h2>DNS</h2>
-        {% if result.dns %}
-          <p><span class="muted">A:</span> {{ result.dns.a_records }}</p>
-          {% if result.dns.aaaa_records %}<p><span class="muted">AAAA:</span> {{ result.dns.aaaa_records }}</p>{% endif %}
-          {% if result.dns.mx_records %}<p><span class="muted">MX:</span> {{ result.dns.mx_records }}</p>{% endif %}
-          <p><span class="muted">SPF:</span> {{ 'present' if result.dns.spf_present else 'missing' }} ({{ result.dns.spf_policy or 'n/a' }})</p>
-          {% if result.dns.spf_recommendation %}<p class="muted">{{ result.dns.spf_recommendation }}</p>{% endif %}
-          <p><span class="muted">DMARC:</span> {{ 'present' if result.dns.dmarc_present else 'missing' }} ({{ result.dns.dmarc_policy or 'n/a' }})</p>
-          {% if result.dns.dmarc_recommendation %}<p class="muted">{{ result.dns.dmarc_recommendation }}</p>{% endif %}
-        {% else %}
-          <p class="muted">No DNS info</p>
-        {% endif %}
-        {% if result.dns_axfr %}
-          <div class="hr"></div>
-          <h3>Zone transfer (AXFR)</h3>
-          <p class="muted">Authoritative NS checked: {{ result.dns_axfr.attempted_ns }}</p>
-          {% if result.dns_axfr.axfr_allowed_on %}
-            <p><span class="badge bad">AXFR allowed</span> on: {{ result.dns_axfr.axfr_allowed_on }}</p>
-          {% else %}
-            <p><span class="badge good">AXFR not allowed</span></p>
-          {% endif %}
-        {% endif %}
-        {% if result.dns_extras %}
-          <div class="hr"></div>
-          <h3>Extras</h3>
-          <p>DNSSEC: <strong>{{ 'present' if result.dns_extras.dnssec_present else 'absent' }}</strong></p>
-          {% if result.dns_extras.caa_records %}
-            <p class="muted">CAA: {{ result.dns_extras.caa_records }}</p>
-          {% endif %}
-        {% endif %}
-      </div>
-    </section>
+    <div class="block" id="dns">
+      <h2>DNS and email policies</h2>
+      {% if result.dns %}
+        <table class="mono">
+          <tbody>
+            <tr><td>A</td><td class="small">{{ result.dns.a_records }}</td></tr>
+            {% if result.dns.aaaa_records %}<tr><td>AAAA</td><td class="small">{{ result.dns.aaaa_records }}</td></tr>{% endif %}
+            {% if result.dns.mx_records %}<tr><td>MX</td><td class="small">{{ result.dns.mx_records }}</td></tr>{% endif %}
+            <tr><td>SPF</td><td>{{ 'present' if result.dns.spf_present else 'missing' }} ({{ result.dns.spf_policy or 'n/a' }}){% if result.dns.spf_recommendation %} — <span class="small">{{ result.dns.spf_recommendation }}</span>{% endif %}</td></tr>
+            <tr><td>DMARC</td><td>{{ 'present' if result.dns.dmarc_present else 'missing' }} ({{ result.dns.dmarc_policy or 'n/a' }}){% if result.dns.dmarc_recommendation %} — <span class="small">{{ result.dns.dmarc_recommendation }}</span>{% endif %}</td></tr>
+          </tbody>
+        </table>
+      {% else %}
+        <div class="small muted">No DNS info.</div>
+      {% endif %}
+    </div>
 
-    <section class="grid-2">
-      <div class="card">
-        <h2>Subdomains</h2>
-        {% if result.subdomains %}
-          <p class="muted">Sources: {{ result.subdomains.sources }}</p>
-          {% if result.subdomains.discovered %}
-            <ul class="list">
-            {% for s in result.subdomains.discovered %}
-              <li>{{ s }}</li>
-            {% endfor %}
-            </ul>
-          {% else %}
-            <p class="muted">None discovered</p>
-          {% endif %}
-        {% else %}
-          <p class="muted">No subdomain enumeration</p>
-        {% endif %}
-      </div>
+    <div class="block" id="axfr">
+      <h2>Zone transfer (AXFR)</h2>
+      {% if result.dns_axfr %}
+        <div class="small muted">Authoritative NS checked: {{ result.dns_axfr.attempted_ns }}</div>
+        <div>{% if result.dns_axfr.axfr_allowed_on %}AXFR allowed on: {{ result.dns_axfr.axfr_allowed_on }}{% else %}AXFR not allowed{% endif %}</div>
+      {% else %}
+        <div class="small muted">Not checked.</div>
+      {% endif %}
+    </div>
 
-      <div class="card">
-        <h2>Web insights</h2>
+    <div class="block" id="dnsx">
+      <h2>DNS extras</h2>
+      {% if result.dns_extras %}
+        <div>DNSSEC: {{ 'present' if result.dns_extras.dnssec_present else 'absent' }}</div>
+        {% if result.dns_extras.caa_records %}<div class="small">CAA: {{ result.dns_extras.caa_records }}</div>{% endif %}
+      {% else %}
+        <div class="small muted">Not checked.</div>
+      {% endif %}
+    </div>
+
+    <div class="block" id="web">
+      <h2>Web insights</h2>
+      {% if result.preview %}
+        <div class="small muted">Effective URL: {{ result.preview.url or 'n/a' }} | Status: {{ result.preview.status_code or 'n/a' }} | Server: {{ result.preview.server or 'n/a' }} | Type: {{ result.preview.content_type or 'n/a' }}</div>
+      {% endif %}
+      <div class="block">
         {% if result.cors %}
           <h3>CORS</h3>
-          <p>Allow-Origin: <strong>{{ result.cors.allow_origin or 'n/a' }}</strong> · Credentials: <strong>{{ result.cors.allow_credentials if result.cors.allow_credentials is not none else 'n/a' }}</strong></p>
-          {% if result.cors.risks %}
-          <ul class="list">
-            {% for r in result.cors.risks %}<li>{{ r }}</li>{% endfor %}
-          </ul>
-          {% endif %}
+          <table class="mono"><tbody>
+            <tr><td>allow-origin</td><td>{{ result.cors.allow_origin or 'n/a' }}</td></tr>
+            <tr><td>allow-credentials</td><td>{{ result.cors.allow_credentials if result.cors.allow_credentials is not none else 'n/a' }}</td></tr>
+            {% if result.cors.risks %}<tr><td>risks</td><td class="small"><ul>{% for r in result.cors.risks %}<li>{{ r }}</li>{% endfor %}</ul></td></tr>{% endif %}
+          </tbody></table>
         {% endif %}
         {% if result.cookies and result.cookies.cookies %}
-          <div class="hr"></div>
           <h3>Cookies</h3>
-          <table>
+          <table class="mono">
             <thead><tr><th>Name</th><th>Secure</th><th>HttpOnly</th><th>SameSite</th><th>Issues</th></tr></thead>
             <tbody>
               {% for c in result.cookies.cookies %}
@@ -247,61 +208,71 @@
                 <td>{{ 'yes' if c.secure else 'no' }}</td>
                 <td>{{ 'yes' if c.http_only else 'no' }}</td>
                 <td>{{ c.same_site or 'n/a' }}</td>
-                <td class="muted">{{ ', '.join(c.issues) if c.issues else '' }}</td>
+                <td class="small">{{ ', '.join(c.issues) if c.issues else '' }}</td>
               </tr>
               {% endfor %}
             </tbody>
           </table>
         {% endif %}
         {% if result.web_fingerprint %}
-          <div class="hr"></div>
           <h3>Fingerprint</h3>
-          <p>Server: <strong>{{ result.web_fingerprint.server or 'n/a' }}</strong> · WAF/CDN: <strong>{{ result.web_fingerprint.waf_or_cdn or 'n/a' }}</strong></p>
-          {% if result.web_fingerprint.technologies %}
-          <p class="muted">Tech: {{ result.web_fingerprint.technologies }}</p>
-          {% endif %}
-        {% endif %}
-        {% if result.security_txt %}
-          <div class="hr"></div>
-          <h3>security.txt</h3>
-          {% if result.security_txt.found %}
-            <p class="muted"><a href="{{ result.security_txt.url }}">{{ result.security_txt.url }}</a></p>
-            {% if result.security_txt.contacts %}<p>Contacts: {{ result.security_txt.contacts }}</p>{% endif %}
-            {% if result.security_txt.policy %}<p>Policy: <a href="{{ result.security_txt.policy }}">link</a></p>{% endif %}
-            {% if result.security_txt.expires %}<p>Expires: {{ result.security_txt.expires }}</p>{% endif %}
-          {% else %}
-            <p class="muted">Not found</p>
-          {% endif %}
+          <table class="mono"><tbody>
+            <tr><td>Server</td><td>{{ result.web_fingerprint.server or 'n/a' }}</td></tr>
+            <tr><td>WAF/CDN</td><td>{{ result.web_fingerprint.waf_or_cdn or 'n/a' }}</td></tr>
+            {% if result.web_fingerprint.technologies %}<tr><td>Technologies</td><td class="small">{{ result.web_fingerprint.technologies }}</td></tr>{% endif %}
+          </tbody></table>
         {% endif %}
         {% if result.mixed_content %}
-          <div class="hr"></div>
           <h3>Mixed content</h3>
-          <p>Insecure references: <strong>{{ result.mixed_content.insecure_reference_count }}</strong></p>
-          {% if result.mixed_content.examples %}
-          <ul class="list">
-            {% for ex in result.mixed_content.examples %}<li>{{ ex }}</li>{% endfor %}
-          </ul>
+          <table class="mono"><tbody>
+            <tr><td>Insecure references</td><td>{{ result.mixed_content.insecure_reference_count }}</td></tr>
+            {% if result.mixed_content.examples %}<tr><td>Examples</td><td class="small"><ul>{% for ex in result.mixed_content.examples %}<li>{{ ex }}</li>{% endfor %}</ul></td></tr>{% endif %}
+          </tbody></table>
+        {% endif %}
+        {% if result.security_txt %}
+          <h3>security.txt</h3>
+          {% if result.security_txt.found %}
+            <div class="small">Found at <a href="{{ result.security_txt.url }}">{{ result.security_txt.url }}</a></div>
+            {% if result.security_txt.contacts %}<div class="small">Contacts: {{ result.security_txt.contacts }}</div>{% endif %}
+            {% if result.security_txt.policy %}<div class="small">Policy: <a href="{{ result.security_txt.policy }}">link</a></div>{% endif %}
+            {% if result.security_txt.expires %}<div class="small">Expires: {{ result.security_txt.expires }}</div>{% endif %}
+          {% else %}
+            <div class="small muted">Not found.</div>
           {% endif %}
         {% endif %}
       </div>
-    </section>
+    </div>
 
-    <section class="card">
+    <div class="block" id="subdomains">
+      <h2>Subdomains</h2>
+      {% if result.subdomains %}
+        <div class="small muted">Sources: {{ result.subdomains.sources }}</div>
+        {% if result.subdomains.discovered %}
+        <ul class="mono">
+          {% for s in result.subdomains.discovered %}<li>{{ s }}</li>{% endfor %}
+        </ul>
+        {% else %}
+          <div class="small muted">None discovered.</div>
+        {% endif %}
+      {% else %}
+        <div class="small muted">Not enumerated.</div>
+      {% endif %}
+    </div>
+
+    <div class="block" id="takeover">
       <h2>Potential subdomain takeovers</h2>
       {% if result.takeover and result.takeover.flagged %}
-        <p><span class="badge warn">{{ result.takeover.flagged|length }} flagged</span> out of {{ result.takeover.checked_count }} checked</p>
-        <ul class="list">
-          {% for f in result.takeover.flagged %}
-          <li>{{ f.subdomain }} — {{ f.reason }}</li>
-          {% endfor %}
+        <div class="small">Flagged: {{ result.takeover.flagged|length }} / Checked: {{ result.takeover.checked_count }}</div>
+        <ul>
+          {% for f in result.takeover.flagged %}<li class="mono">{{ f.subdomain }} — {{ f.reason }}</li>{% endfor %}
         </ul>
       {% else %}
-        <p class="muted">No takeover signatures detected</p>
+        <div class="small muted">No takeover signatures detected.</div>
       {% endif %}
-    </section>
+    </div>
 
-    <footer class="muted" style="padding: 14px 0; font-size: 13px;">Generated by SentinelScope</footer>
+    <div class="sep"></div>
+    <div class="small muted">Generated by SentinelScope</div>
   </div>
 </body>
 </html>
-

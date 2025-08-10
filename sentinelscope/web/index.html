@@ -3,43 +3,70 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SentinelScope – Website Security Checkup</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <title>SentinelScope — Security Checkup</title>
+  <meta name="robots" content="noindex" />
   <style>
-    :root { --bg:#0f172a; --surface:#0b1220; --card:#111827; --border:#1f2937; --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; --good:#10b981; --warn:#f59e0b; --bad:#ef4444; }
-    body { margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; line-height:1.65; }
-    .wrap { max-width: 1040px; margin: 0 auto; padding: 24px; }
-    .card { background: var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin:12px 0; }
-    h1 { margin: 0 0 4px; font-size: 26px; letter-spacing:.2px; }
-    h2 { margin: 0 0 10px; font-size: 18px; letter-spacing:.2px; }
-    label { display:block; margin:8px 0 4px; color: var(--muted); font-size: 14px; }
-    input[type="text"], select { width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
-    .row { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; }
-    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
-    .toggles { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
-    @media (max-width: 900px) { .toggles { grid-template-columns: 1fr; } }
-    .btn { background: var(--accent); color:white; border:none; border-radius:10px; padding:12px 16px; cursor:pointer; font-weight:700; letter-spacing:.2px; }
-    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    :root { --fg:#111827; --bg:#ffffff; --muted:#6b7280; --line:#e5e7eb; --accent:#2563eb; }
+    @media (prefers-color-scheme: dark) {
+      :root { --fg:#e5e7eb; --bg:#0b1020; --muted:#9aa4b2; --line:#1f2937; --accent:#3b82f6; }
+    }
+    html, body { margin:0; padding:0; background:var(--bg); color:var(--fg); }
+    body { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:14px; line-height:1.5; }
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 16px; }
+    h1, h2, h3 { margin: 0 0 6px; font-weight: 700; }
+    h1 { font-size: 18px; }
+    h2 { font-size: 16px; margin-top: 12px; }
+    h3 { font-size: 14px; margin-top: 8px; }
     .muted { color: var(--muted); }
-    pre { white-space: pre-wrap; word-break: break-word; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
-    .pill { display:inline-block; background: rgba(148,163,184,.12); border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size: 13px; }
-    .kvs { display:flex; gap:10px; flex-wrap:wrap; }
-    .kvs .item { background: var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size: 14px; }
-    .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
-    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+    .card { border:1px solid var(--line); border-radius:6px; padding: 12px; margin: 10px 0; }
+    label { display:block; margin:6px 0 2px; color: var(--muted); }
+    input[type="text"], select { width:100%; padding:8px; border-radius:4px; border:1px solid var(--line); background:var(--bg); color:var(--fg); }
+    input[type="text"]:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: none; }
+    .row { display:grid; grid-template-columns: 1.5fr 1fr auto; gap:12px; align-items:end; }
+    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+    .toggles { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:8px; }
+    @media (max-width: 900px) { .toggles { grid-template-columns: 1fr; } }
+    .btn { background: var(--accent); color: white; border:1px solid var(--line); border-radius:4px; padding:8px 12px; cursor:pointer; font-weight:700; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    .btn-line { background: transparent; color: var(--fg); border:1px solid var(--line); border-radius:4px; padding:6px 8px; cursor:pointer; }
+    pre { white-space: pre-wrap; word-break: break-word; border:1px solid var(--line); border-radius:6px; padding:10px; margin:0; }
+    .kvs { display:flex; gap:8px; flex-wrap:wrap; align-items:flex-start; }
+    .kvs .item { border:1px solid var(--line); border-radius:4px; padding:4px 6px; font-size: 12px; max-width:100%; overflow-wrap:anywhere; word-break: break-word; flex: 0 1 auto; }
+    .grid-2 { display:grid; grid-template-columns: 1.2fr 0.8fr; gap:10px; align-items:start; }
+    .grid-2 > div { min-width: 0; }
+    @media (max-width: 1100px) { .grid-2 { grid-template-columns: 1fr; } }
+    .small { font-size: 12px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align: top; }
+    details summary { cursor: pointer; }
+    .mono { font-family: inherit; }
+    .loading { position: fixed; inset: 0; background: rgba(0,0,0,.08); display: none; align-items: center; justify-content: center; z-index: 9999; }
+    @media (prefers-color-scheme: dark) { .loading { background: rgba(0,0,0,.3); } }
+    .loading.show { display: flex; }
+    .loading-box { background: var(--bg); color: var(--fg); border:1px solid var(--line); border-radius:6px; padding: 14px 16px; min-width: 260px; box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+    .loading-title { font-weight: 700; margin-bottom: 4px; }
+    .loading-sub { color: var(--muted); font-size: 12px; }
+    .tabs { display:flex; gap:0; align-items:flex-end; border-bottom:1px solid var(--line); margin-bottom:8px; }
+    .tab { padding:6px 10px; border:1px solid var(--line); border-bottom:none; border-radius:6px 6px 0 0; cursor:pointer; background: transparent; color: var(--fg); margin-right:6px; }
+    .tab.active { background: var(--bg); border-color: var(--line); border-bottom-color: var(--bg); font-weight:700; }
+    .actions { margin-left:auto; display:flex; gap:6px; }
+    .json-panel { border:1px solid var(--line); border-radius:0 6px 6px 6px; padding:10px; max-height: 420px; overflow:auto; background: var(--bg); }
+    .tree details { margin-left: 16px; }
+    .tree summary { list-style: none; }
+    .tree-key { color: var(--fg); }
+    .tree-type { color: var(--muted); }
+    .tree-primitive { color: var(--fg); }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>Website Security Checkup</h1>
-      <p class="muted">Enter a domain. We’ll run a safe, quick health check and show a simple summary you can share.</p>
-      <div class="row">
+      <h1>SentinelScope — Security Checkup</h1>
+      <div class="muted small">Enter a domain or URL. We’ll run a safe baseline and show the results below.</div>
+      <div class="row" style="margin-top:8px;">
         <div>
-          <label for="domain">Domain</label>
-          <input id="domain" type="text" placeholder="example.com" />
+          <label for="domain">Domain or URL</label>
+          <input id="domain" class="mono" type="text" placeholder="example.com or https://example.com" />
         </div>
         <div>
           <label for="profile">Port profile</label>
@@ -48,12 +75,12 @@
             <option value="top100">Top 100</option>
           </select>
         </div>
-        <div style="display:flex; align-items:flex-end;">
+        <div style="display:flex; align-items:center; gap:10px;">
           <button id="go" class="btn">Scan</button>
-          <span id="status" class="muted" style="margin-left:10px;"></span>
+          <span id="status" class="muted small"></span>
         </div>
       </div>
-      <div class="toggles" style="margin-top:10px;">
+      <div class="toggles" style="margin-top:8px;">
         <label><input id="scan_ports" type="checkbox" checked /> Scan ports</label>
         <label><input id="scan_subdomains" type="checkbox" checked /> Scan subdomains</label>
         <label><input id="analyze_headers" type="checkbox" checked /> Analyze headers</label>
@@ -63,25 +90,52 @@
       </div>
     </div>
 
-    <div class="card">
-      <h2>Summary</h2>
-      <div id="summary" class="muted">No scan yet.</div>
-      <div class="kvs small" id="kvs" style="margin-top:8px; display:none;"></div>
-    </div>
-
     <div class="grid-2">
-      <div class="card">
-        <h2>Details</h2>
-        <pre id="json">(empty)</pre>
+      <div>
+        <div class="card">
+          <h2>Summary</h2>
+          <div id="summary" class="muted">No scan yet.</div>
+          <div class="kvs small" id="kvs" style="margin-top:6px; display:none;"></div>
+        </div>
+
+        <div id="sections">
+          <!-- Rendered sections will appear here -->
+        </div>
       </div>
-      <div class="card">
-        <h2>Tips</h2>
-        <ul class="small">
-          <li>Start with headers grade and TLS – they affect all users.</li>
-          <li>Keep only expected ports open (usually 80/443 for websites).</li>
-          <li>Move DMARC to “reject” when you’ve covered all legitimate senders.</li>
-        </ul>
+
+      <div>
+        <div class="card">
+          <h2>Details</h2>
+          <div class="tabs">
+            <button id="tabTree" class="tab active" type="button">Tree</button>
+            <button id="tabRaw" class="tab" type="button">Raw</button>
+            <div class="actions">
+              <button id="btnExpand" class="btn-line small" type="button">Expand all</button>
+              <button id="btnCollapse" class="btn-line small" type="button">Collapse all</button>
+              <button id="btnCopy" class="btn-line small" type="button">Copy JSON</button>
+              <button id="btnDownload" class="btn-line small" type="button">Download</button>
+            </div>
+          </div>
+          <div id="panelTree" class="json-panel tree"></div>
+          <div id="panelRaw" class="json-panel" style="display:none;"><pre id="json">(empty)</pre></div>
+        </div>
+        <div class="card">
+          <h2>Notes</h2>
+          <ul class="small">
+            <li>Header score: aim for A on public sites; A+ for auth/PII/payment flows.</li>
+            <li>Expose only expected ports (typically 80/443 for websites).</li>
+            <li>SPF/DMARC reduce email spoofing risk. Prefer <code>~all</code> or <code>-all</code> with coverage.</li>
+          </ul>
+        </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading" class="loading" aria-hidden="true">
+    <div class="loading-box">
+      <div class="loading-title">Scanning…</div>
+      <div id="loadingTarget" class="loading-sub">Please wait. Network requests and DNS lookups can take ~15–45s.</div>
     </div>
   </div>
 
@@ -89,8 +143,70 @@
     const byId = (id) => document.getElementById(id);
     const go = byId('go');
     const status = byId('status');
-    const jsonEl = byId('json');
     const summaryEl = byId('summary');
+    const sectionsEl = byId('sections');
+    const loadingEl = byId('loading');
+    const loadingTargetEl = byId('loadingTarget');
+    const panelTree = byId('panelTree');
+    const panelRaw = byId('panelRaw');
+    const tabTree = byId('tabTree');
+    const tabRaw = byId('tabRaw');
+    const btnExpand = byId('btnExpand');
+    const btnCollapse = byId('btnCollapse');
+    const btnCopy = byId('btnCopy');
+    const btnDownload = byId('btnDownload');
+    const jsonPre = document.getElementById('json');
+
+    const esc = (v) => String(v ?? '').replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[s]));
+
+    function showLoading(domain) {
+      loadingTargetEl.textContent = domain ? `Target: ${domain}` : 'Preparing scan…';
+      loadingEl.classList.add('show');
+      loadingEl.setAttribute('aria-hidden', 'false');
+    }
+    function hideLoading() {
+      loadingEl.classList.remove('show');
+      loadingEl.setAttribute('aria-hidden', 'true');
+    }
+
+    function kvGrid(pairs) {
+      return '<div class="kvs">' + pairs.map(([k,v]) => `<span class="item"><strong>${esc(k)}:</strong> ${esc(v)}</span>`).join('') + '</div>';
+    }
+
+    function renderTree(key, value) {
+      const t = typeof value;
+      if (value === null || t === 'number' || t === 'boolean' || t === 'string') {
+        const v = (value === null) ? 'null' : (t === 'string' ? `"${esc(value)}"` : String(value));
+        return `<div><span class="tree-key">${esc(key)}</span>: <span class="tree-primitive">${v}</span></div>`;
+      }
+      if (Array.isArray(value)) {
+        const items = value.map((v, i) => `<div>${renderTree(i, v)}</div>`).join('');
+        return `<details open><summary><span class="tree-key">${esc(key)}</span>: <span class="tree-type">Array(${value.length})</span></summary>${items}</details>`;
+      }
+      const keys = Object.keys(value || {});
+      const body = keys.map(k => `<div>${renderTree(k, value[k])}</div>`).join('');
+      return `<details open><summary><span class="tree-key">${esc(key)}</span>: <span class="tree-type">Object(${keys.length})</span></summary>${body}</details>`;
+    }
+
+    function renderTreeRoot(obj) {
+      const keys = Object.keys(obj || {});
+      const body = keys.map(k => renderTree(k, obj[k])).join('');
+      panelTree.innerHTML = body || '<div class="muted small">(empty)</div>';
+    }
+
+    function setActiveTab(which) {
+      if (which === 'tree') {
+        tabTree.classList.add('active'); tabRaw.classList.remove('active');
+        panelTree.style.display = 'block'; panelRaw.style.display = 'none';
+      } else {
+        tabRaw.classList.add('active'); tabTree.classList.remove('active');
+        panelRaw.style.display = 'block'; panelTree.style.display = 'none';
+      }
+    }
+
+    function expandCollapse(expand) {
+      panelTree.querySelectorAll('details').forEach(d => { d.open = !!expand; });
+    }
 
     function summarize(res) {
       const headersGrade = res.headers?.grade ?? 'n/a';
@@ -109,14 +225,157 @@
         ['DMARC policy', dmarc],
       ];
       const kvsEl = document.getElementById('kvs');
-      kvsEl.innerHTML = kvs.map(([k,v]) => `<span class="item"><strong>${k}:</strong> ${v}</span>`).join('');
+      kvsEl.innerHTML = kvs.map(([k,v]) => `<span class="item"><strong>${esc(k)}:</strong> ${esc(v)}</span>`).join('');
       kvsEl.style.display = 'flex';
       return 'Scan complete.';
     }
 
+    function renderSections(res) {
+      const parts = [];
+      if (res.headers) {
+        const headRows = (res.headers.findings || []).map(f => `
+          <tr>
+            <td>${esc(f.header)}</td>
+            <td>${f.present && !f.recommendation ? 'Present' : f.present && f.recommendation ? 'Improve' : 'Missing'}</td>
+            <td class="small">${esc(f.recommendation || '')}</td>
+          </tr>`).join('');
+        parts.push(`
+          <div class="card">
+            <h2>Security headers</h2>
+            ${kvGrid([["Grade", res.headers.grade], ["Score", String(res.headers.score)]])}
+            <table class="mono">
+              <thead><tr><th>Header</th><th>Status</th><th>Recommendation</th></tr></thead>
+              <tbody>${headRows}</tbody>
+            </table>
+          </div>`);
+      }
+      if (res.tls) {
+        parts.push(`
+          <div class="card">
+            <h2>TLS (HTTPS)</h2>
+            <table class="mono"><tbody>
+              <tr><td>Protocol</td><td>${esc(res.tls.protocol || 'n/a')}</td></tr>
+              <tr><td>Valid from</td><td>${esc(res.tls.valid_from || 'n/a')}</td></tr>
+              <tr><td>Valid to</td><td>${esc(res.tls.valid_to || 'n/a')}</td></tr>
+              <tr><td>Days until expiry</td><td>${res.tls.days_until_expiry ?? 'n/a'}</td></tr>
+              <tr><td>Subject</td><td class="small">${esc(JSON.stringify(res.tls.subject || {}))}</td></tr>
+              <tr><td>Issuer</td><td class="small">${esc(JSON.stringify(res.tls.issuer || {}))}</td></tr>
+              ${(res.tls.warnings && res.tls.warnings.length) ? `<tr><td>Warnings</td><td><ul class="small">${res.tls.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul></td></tr>` : ''}
+            </tbody></table>
+          </div>`);
+      }
+      if (res.ports) {
+        const openList = (res.ports.open_ports || []).join(', ');
+        const rows = (res.ports.results || []).map(r => `<tr><td>${r.port}</td><td>${r.is_open ? 'Open' : 'Closed'}</td></tr>`).join('');
+        parts.push(`
+          <div class="card">
+            <h2>Open ports</h2>
+            <div class="small muted">${(res.ports.open_ports || []).length} open · scanned ${(res.ports.ports_scanned || []).length} ports</div>
+            <div class="small">Open: ${openList ? `<code>${esc(openList)}</code>` : '<span class="muted">none</span>'}</div>
+            <details><summary class="small">View full results</summary>
+              <div style="margin-top:8px;">
+                <table class="mono"><thead><tr><th>Port</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>
+              </div>
+            </details>
+          </div>`);
+      }
+      if (res.dns) {
+        parts.push(`
+          <div class="card">
+            <h2>DNS and email policies</h2>
+            <table class="mono"><tbody>
+              <tr><td>A</td><td class="small">${esc(JSON.stringify(res.dns.a_records || []))}</td></tr>
+              ${res.dns.aaaa_records && res.dns.aaaa_records.length ? `<tr><td>AAAA</td><td class="small">${esc(JSON.stringify(res.dns.aaaa_records))}</td></tr>` : ''}
+              ${res.dns.mx_records && res.dns.mx_records.length ? `<tr><td>MX</td><td class="small">${esc(JSON.stringify(res.dns.mx_records))}</td></tr>` : ''}
+              <tr><td>SPF</td><td>${res.dns.spf_present ? 'present' : 'missing'} (${esc(res.dns.spf_policy || 'n/a')})${res.dns.spf_recommendation ? ' — <span class="small">' + esc(res.dns.spf_recommendation) + '</span>' : ''}</td></tr>
+              <tr><td>DMARC</td><td>${res.dns.dmarc_present ? 'present' : 'missing'} (${esc(res.dns.dmarc_policy || 'n/a')})${res.dns.dmarc_recommendation ? ' — <span class="small">' + esc(res.dns.dmarc_recommendation) + '</span>' : ''}</td></tr>
+            </tbody></table>
+          </div>`);
+      }
+      if (res.dns_axfr || res.dns_extras) {
+        parts.push(`
+          <div class="card">
+            <h2>DNS checks</h2>
+            ${res.dns_axfr ? `<div class="small muted">NS checked: ${esc(JSON.stringify(res.dns_axfr.attempted_ns || []))}</div>
+              <div>${(res.dns_axfr.axfr_allowed_on || []).length ? ('AXFR allowed on: ' + esc(JSON.stringify(res.dns_axfr.axfr_allowed_on))) : 'AXFR not allowed'}</div>` : ''}
+            ${res.dns_extras ? `<div>DNSSEC: ${res.dns_extras.dnssec_present ? 'present' : 'absent'}</div>${(res.dns_extras.caa_records || []).length ? `<div class="small">CAA: ${esc(JSON.stringify(res.dns_extras.caa_records))}</div>` : ''}` : ''}
+          </div>`);
+      }
+      if (res.preview || res.cors || res.cookies || res.web_fingerprint || res.mixed_content || res.security_txt) {
+        parts.push(`
+          <div class="card">
+            <h2>Web insights</h2>
+            ${res.preview ? `<div class="small muted">Effective URL: ${esc(res.preview.url || 'n/a')} | Status: ${esc(res.preview.status_code || 'n/a')} | Server: ${esc(res.preview.server || 'n/a')} | Type: ${esc(res.preview.content_type || 'n/a')}</div>` : ''}
+            ${res.cors ? `<h3>CORS</h3><table class="mono"><tbody>
+              <tr><td>allow-origin</td><td>${esc(res.cors.allow_origin || 'n/a')}</td></tr>
+              <tr><td>allow-credentials</td><td>${res.cors.allow_credentials ?? 'n/a'}</td></tr>
+              ${(res.cors.risks || []).length ? `<tr><td>risks</td><td class="small"><ul>${res.cors.risks.map(r => `<li>${esc(r)}</li>`).join('')}</ul></td></tr>` : ''}
+            </tbody></table>` : ''}
+            ${res.cookies && res.cookies.cookies && res.cookies.cookies.length ? `<h3>Cookies</h3>
+              <table class="mono"><thead><tr><th>Name</th><th>Secure</th><th>HttpOnly</th><th>SameSite</th><th>Issues</th></tr></thead><tbody>
+                ${res.cookies.cookies.map(c => `<tr><td>${esc(c.name)}</td><td>${c.secure ? 'yes' : 'no'}</td><td>${c.http_only ? 'yes' : 'no'}</td><td>${esc(c.same_site || 'n/a')}</td><td class="small">${esc((c.issues || []).join(', '))}</td></tr>`).join('')}
+              </tbody></table>` : ''}
+            ${res.web_fingerprint ? `<h3>Fingerprint</h3><table class="mono"><tbody>
+              <tr><td>Server</td><td>${esc(res.web_fingerprint.server || 'n/a')}</td></tr>
+              <tr><td>WAF/CDN</td><td>${esc(res.web_fingerprint.waf_or_cdn || 'n/a')}</td></tr>
+              ${(res.web_fingerprint.technologies || []).length ? `<tr><td>Technologies</td><td class="small">${esc(JSON.stringify(res.web_fingerprint.technologies))}</td></tr>` : ''}
+            </tbody></table>` : ''}
+            ${res.mixed_content ? `<h3>Mixed content</h3><table class="mono"><tbody>
+              <tr><td>Insecure references</td><td>${res.mixed_content.insecure_reference_count}</td></tr>
+              ${(res.mixed_content.examples || []).length ? `<tr><td>Examples</td><td class="small"><ul>${res.mixed_content.examples.map(ex => `<li>${esc(ex)}</li>`).join('')}</ul></td></tr>` : ''}
+            </tbody></table>` : ''}
+            ${res.security_txt ? `<h3>security.txt</h3>${res.security_txt.found ? `<div class="small">Found at <a href="${esc(res.security_txt.url)}">${esc(res.security_txt.url)}</a></div>
+              ${(res.security_txt.contacts || []).length ? `<div class="small">Contacts: ${esc(JSON.stringify(res.security_txt.contacts))}</div>` : ''}
+              ${res.security_txt.policy ? `<div class="small">Policy: <a href="${esc(res.security_txt.policy)}">link</a></div>` : ''}
+              ${res.security_txt.expires ? `<div class="small">Expires: ${esc(res.security_txt.expires)}</div>` : ''}` : '<div class="small muted">Not found.</div>'}` : ''}
+          </div>`);
+      }
+      if (res.subdomains) {
+        const list = (res.subdomains.discovered || []);
+        const first = list.slice(0, 30).map(s => `<li>${esc(s)}</li>`).join('');
+        const rest = list.slice(30).map(s => `<li>${esc(s)}</li>`).join('');
+        parts.push(`
+          <div class="card">
+            <h2>Subdomains</h2>
+            <div class="small muted">Sources: ${esc(JSON.stringify(res.subdomains.sources || {}))}</div>
+            ${list.length ? `<ul class="mono">${first}</ul>${rest ? `<details><summary class="small">Show ${list.length-30} more</summary><ul class="mono" style="margin-top:6px;">${rest}</ul></details>` : ''}` : '<div class="small muted">None discovered.</div>'}
+          </div>`);
+      }
+      if (res.takeover) {
+        parts.push(`
+          <div class="card">
+            <h2>Potential subdomain takeovers</h2>
+            ${ (res.takeover.flagged || []).length ? `<div class="small">Flagged: ${res.takeover.flagged.length} / Checked: ${res.takeover.checked_count}</div>
+              <ul>${res.takeover.flagged.map(f => `<li class="mono">${esc(f.subdomain)} — ${esc(f.reason)}</li>`).join('')}</ul>` : '<div class="small muted">No takeover signatures detected.</div>'}
+          </div>`);
+      }
+      sectionsEl.innerHTML = parts.join('\n');
+    }
+
+    function copyToClipboard(text) {
+      try { navigator.clipboard.writeText(text); } catch (_) { /* ignore */ }
+    }
+
+    function downloadJSON(filename, text) {
+      const blob = new Blob([text], {type:'application/json'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click();
+      setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 0);
+    }
+
+    tabTree.addEventListener('click', () => setActiveTab('tree'));
+    tabRaw.addEventListener('click', () => setActiveTab('raw'));
+    btnExpand.addEventListener('click', () => expandCollapse(true));
+    btnCollapse.addEventListener('click', () => expandCollapse(false));
+    btnCopy.addEventListener('click', () => copyToClipboard(jsonPre.textContent));
+    btnDownload.addEventListener('click', () => downloadJSON('sentinelscope-result.json', jsonPre.textContent));
+
     async function runScan() {
+      const kvsEl = document.getElementById('kvs');
+      const domainVal = byId('domain').value.trim();
       const body = {
-        domain: byId('domain').value.trim(),
+        domain: domainVal,
         scan_ports: byId('scan_ports').checked,
         scan_subdomains: byId('scan_subdomains').checked,
         analyze_headers: byId('analyze_headers').checked,
@@ -129,20 +388,29 @@
         alert('Please enter a domain');
         return;
       }
+      showLoading(domainVal);
       status.textContent = 'Scanning…';
       go.disabled = true;
-      jsonEl.textContent = '(Loading…)';
+      jsonPre.textContent = '(Loading…)';
       summaryEl.textContent = '';
+      sectionsEl.innerHTML = '';
+      panelTree.innerHTML = '';
+      setActiveTab('tree');
+      kvsEl.style.display = 'none';
       try {
         const resp = await fetch('/scan/domain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         const data = await resp.json();
-        jsonEl.textContent = JSON.stringify(data, null, 2);
+        const raw = JSON.stringify(data, null, 2);
+        jsonPre.textContent = raw;
         summaryEl.textContent = summarize(data);
+        renderSections(data);
+        renderTreeRoot(data);
       } catch (e) {
-        jsonEl.textContent = `Error: ${e}`;
+        jsonPre.textContent = `Error: ${e}`;
         summaryEl.textContent = 'Failed to scan.';
       } finally {
+        hideLoading();
         go.disabled = false;
         status.textContent = '';
       }
