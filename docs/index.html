@@ -3,196 +3,6 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Website Security Checkup – Example Report</title>
-  <meta name="description" content="A clear, non-technical security checkup that explains what was checked, what it means, and what to do next." />
-  <meta name="theme-color" content="#0f172a" />
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
-    :root { --bg:#0f172a; --card:#111827; --border:#1f2937; --text:#e2e8f0; --muted:#94a3b8; --good:#10b981; --warn:#f59e0b; --bad:#ef4444; --link:#93c5fd; }
-    body { margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    a { color: var(--link); text-decoration: none; } a:hover{ text-decoration: underline; }
-    .wrap { max-width: 1120px; margin: 0 auto; padding: 24px; }
-    .card { background: var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin:12px 0; }
-    h1, h2, h3 { margin: 0 0 10px; }
-    p, li { line-height: 1.6; }
-    .grid { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
-    @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
-    .muted { color: var(--muted); }
-    .badge { display:inline-block; padding:4px 10px; border-radius:999px; font-weight:700; font-size:12px; }
-    .good { background:#065f46; color:#d1fae5; }
-    .warn { background:#78350f; color:#ffedd5; }
-    .bad  { background:#7f1d1d; color:#fee2e2; }
-    .legend { display:flex; gap:10px; flex-wrap:wrap; align-items:center; font-size:13px; }
-    .kv { display:flex; gap:8px; flex-wrap:wrap; }
-    .kv .item { background: rgba(148,163,184,.08); border:1px solid var(--border); border-radius:10px; padding:8px 10px; }
-    .callout { border-left:4px solid; padding:10px 12px; border-radius:8px; margin: 10px 0; }
-    .callout.info { border-color:#2563eb; background: rgba(37,99,235,.08); }
-    .callout.warn { border-color:#f59e0b; background: rgba(245,158,11,.08); }
-    .callout.crit { border-color:#ef4444; background: rgba(239,68,68,.08); }
-    table { width:100%; border-collapse: collapse; }
-    th, td { border-bottom:1px solid var(--border); text-align:left; padding:8px; vertical-align: top; }
-    .small { font-size: 13px; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Website Security Checkup</h1>
-      <p class="muted">A plain‑English report you can share. Shows what was checked, what it means, and what to do next.</p>
-      <div class="legend small">
-        <span class="badge good">Good</span>
-        <span class="badge warn">Needs attention</span>
-        <span class="badge bad">Fix soon</span>
-      </div>
-    </div>
-
-    <div class="grid">
-      <div class="card">
-        <h2>Executive summary</h2>
-        <p><strong>Overall:</strong> Mostly good. A few settings need tightening to better protect users and email.</p>
-        <div class="kv small">
-          <div class="item">Website safety settings: <strong>B</strong> <span class="badge warn">Needs attention</span></div>
-          <div class="item">Encryption (HTTPS): <strong>Up‑to‑date</strong> <span class="badge good">Good</span></div>
-          <div class="item">Open doors (ports): <strong>Expected</strong> <span class="badge good">Good</span></div>
-          <div class="item">Email safety (SPF/DMARC): <strong>OK</strong> <span class="badge warn">Needs attention</span></div>
-        </div>
-        <canvas id="scoreChart" width="240" height="240" aria-label="Overall score"></canvas>
-      </div>
-
-      <div class="card">
-        <h2>What we checked</h2>
-        <ul>
-          <li><strong>Website safety settings</strong> (Security Headers): rules a browser follows to keep users safe from common attacks.</li>
-          <li><strong>Encryption</strong> (TLS/HTTPS): the modern “lock” used when people visit your site.</li>
-          <li><strong>Open doors</strong> (Ports): which network doors are available from the internet.</li>
-          <li><strong>Addresses</strong> (DNS & Email): where your site lives and whether email is protected from spoofing.</li>
-          <li><strong>Other site addresses</strong> (Subdomains): other places your brand lives, like api.example.com.</li>
-          <li><strong>Broken signposts</strong> (Takeovers): places that point to providers with no content yet (can be abused).</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>What to fix first</h2>
-      <ol>
-        <li><strong>Add a Permissions‑Policy</strong> to limit powerful browser features (camera, mic, etc.).</li>
-        <li><strong>Tighten your Content‑Security‑Policy (CSP)</strong> by avoiding wildcards and “unsafe‑inline”.</li>
-        <li><strong>Improve HSTS</strong> by adding <code>includeSubDomains</code> and <code>preload</code> if it fits your rollout plan.</li>
-        <li><strong>Move DMARC to “reject”</strong> once confident, so spoofed emails are blocked instead of just flagged.</li>
-        <li><strong>Review any “takeover” flags</strong>; remove unused DNS entries or publish content with the provider.</li>
-      </ol>
-      <div class="callout warn small"><strong>Why this matters:</strong> These changes reduce phishing risk, prevent common website attacks, and improve user trust.</div>
-    </div>
-
-    <div class="card">
-      <h2>Findings (with plain‑English explanations)</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>Website safety settings <span class="badge warn">B</span></h3>
-          <p class="small">Browsers follow these rules to keep users safe. Stronger rules reduce the chances of hacks like cross‑site scripting.</p>
-          <table>
-            <thead><tr><th>Setting</th><th>Status</th><th>What it means</th><th>What to consider</th></tr></thead>
-            <tbody>
-              <tr><td>Content‑Security‑Policy</td><td>Present</td><td>Limits where scripts, images, etc. can load from.</td><td>Remove wildcards; avoid “unsafe‑inline”.</td></tr>
-              <tr><td>Strict‑Transport‑Security</td><td>Present</td><td>Forces browsers to use HTTPS.</td><td>Add includeSubDomains; consider preload.</td></tr>
-              <tr><td>X‑Content‑Type‑Options</td><td>Present</td><td>Prevents MIME‑type “sniffing”.</td><td>Good as is.</td></tr>
-              <tr><td>X‑Frame‑Options</td><td>Present</td><td>Stops clickjacking via iframes.</td><td>Good as is.</td></tr>
-              <tr><td>Referrer‑Policy</td><td>Present</td><td>Limits what info is sent when users click links.</td><td>Good as is.</td></tr>
-              <tr><td>Permissions‑Policy</td><td>Missing</td><td>Controls access to sensitive features like camera and mic.</td><td>Add a conservative policy.</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="card">
-          <h3>Encryption (HTTPS/TLS) <span class="badge good">Good</span></h3>
-          <p class="small">This is the “lock” symbol in the browser. You’re using modern encryption and the certificate looks healthy.</p>
-          <ul class="small">
-            <li>Protocol: TLS 1.3 (latest)</li>
-            <li>Certificate validity: ~340 days left</li>
-            <li>Issuer: Let’s Encrypt (widely trusted)</li>
-          </ul>
-        </div>
-      </div>
-      <div class="grid">
-        <div class="card">
-          <h3>Open doors (Ports) <span class="badge good">Expected</span></h3>
-          <p class="small">We check common “doors” into your system. For public websites, only ports 80 and 443 usually need to be open.</p>
-          <table>
-            <thead><tr><th>Port</th><th>What it’s for</th><th>Status</th></tr></thead>
-            <tbody>
-              <tr><td>80</td><td>Standard web traffic (redirect to HTTPS)</td><td>Open</td></tr>
-              <tr><td>443</td><td>Secure web traffic (HTTPS)</td><td>Open</td></tr>
-            </tbody>
-          </table>
-        </div>
-        <div class="card">
-          <h3>Addresses on the internet (DNS & Email) <span class="badge warn">OK</span></h3>
-          <p class="small">These are the records that tell browsers and email where to go. Email protections help prevent spoofing.</p>
-          <ul class="small">
-            <li>A record: 93.184.216.34</li>
-            <li>Mail record (MX): Google Workspace</li>
-            <li>SPF: present (only approved senders may send) <span class="badge good">Good</span></li>
-            <li>DMARC: quarantine (mark suspicious emails) <span class="badge warn">OK</span> → consider “reject” later</li>
-          </ul>
-        </div>
-      </div>
-      <div class="grid">
-        <div class="card">
-          <h3>Other site addresses (Subdomains)</h3>
-          <p class="small">Examples include api.example.com or blog.example.com. These often host separate apps.</p>
-          <ul class="small">
-            <li>api.example.com</li>
-            <li>static.example.com</li>
-            <li>cdn.example.com</li>
-            <li>blog.example.com</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Broken signposts (Takeovers) <span class="badge warn">Check</span></h3>
-          <p class="small">Sometimes a name points to a provider with no site attached yet. Attackers can claim it if left dangling.</p>
-          <ul class="small">
-            <li><span class="badge bad">Flagged</span> pages.example.com — looks like a placeholder at a third‑party host.</li>
-          </ul>
-          <div class="callout info small"><strong>Action:</strong> Either remove the DNS entry or deploy the site at the provider.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Keep it green</h2>
-      <ul>
-        <li>Re‑run this checkup monthly or after major changes.</li>
-        <li>Use “staging” to safely test CSP and HSTS before turning them on everywhere.</li>
-        <li>Move DMARC to “reject” once your email sending is fully covered.</li>
-      </ul>
-    </div>
-
-    <div class="card small muted">
-      <p>This is a demo report with representative data. Always scan your own domain with approval.</p>
-    </div>
-  </div>
-
-  <script>
-    // Overall score chart (for a friendly snapshot)
-    const ctx = document.getElementById('scoreChart');
-    if (ctx && window.Chart) {
-      const score = 82; // representative
-      new Chart(ctx, {
-        type: 'doughnut',
-        data: { labels: ['Score','Remaining'], datasets: [{ data: [score, 100-score], backgroundColor: ['#10b981', '#1f2937'] }] },
-        options: { plugins: { legend: { display: false } } }
-      });
-    }
-  </script>
-</body>
-</html>
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SentinelScope Report - example.com</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -231,7 +41,7 @@
   <div class="wrap">
     <div class="card">
       <h1>SentinelScope Report</h1>
-      <p class="muted">Target: <strong>example.com</strong> &middot; Started: 2025-08-10 02:17:07.564206 &middot; Finished: 2025-08-10 02:17:13.140568</p>
+      <p class="muted">Target: <strong>example.com</strong> &middot; Started: 2025-08-10 02:31:37.893466 &middot; Finished: 2025-08-10 02:31:40.538131</p>
     </div>
 
     <div class="grid">
@@ -302,7 +112,7 @@
         <h2>Open Ports</h2>
         
           
-            <p><span class="badge badge-red">1 found</span></p>
+            <p><span class="badge badge-red">2 found</span></p>
             <p class="muted">Scanned: 30 ports</p>
             <table>
               <thead><tr><th>Port</th><th>Status</th></tr></thead>
@@ -365,7 +175,7 @@
               
                 <tr>
                   <td>443</td>
-                  <td>Closed</td>
+                  <td>Open</td>
                 </tr>
               
                 <tr>
@@ -503,8 +313,8 @@
       <div class="card">
         <h2>DNS</h2>
         
-          <p><span class="muted">A:</span> [&#39;23.192.228.84&#39;, &#39;23.215.0.136&#39;, &#39;96.7.128.198&#39;, &#39;96.7.128.175&#39;, &#39;23.192.228.80&#39;, &#39;23.215.0.138&#39;]</p>
-          <p><span class="muted">AAAA:</span> [&#39;2600:1406:bc00:53::b81e:94c8&#39;, &#39;2600:1408:ec00:36::1736:7f31&#39;, &#39;2600:1406:bc00:53::b81e:94ce&#39;, &#39;2600:1406:3a00:21::173e:2e66&#39;, &#39;2600:1408:ec00:36::1736:7f24&#39;, &#39;2600:1406:3a00:21::173e:2e65&#39;]</p>
+          <p><span class="muted">A:</span> [&#39;23.215.0.138&#39;, &#39;96.7.128.175&#39;, &#39;96.7.128.198&#39;, &#39;23.192.228.84&#39;, &#39;23.215.0.136&#39;, &#39;23.192.228.80&#39;]</p>
+          <p><span class="muted">AAAA:</span> [&#39;2600:1406:bc00:53::b81e:94ce&#39;, &#39;2600:1406:3a00:21::173e:2e65&#39;, &#39;2600:1406:bc00:53::b81e:94c8&#39;, &#39;2600:1406:3a00:21::173e:2e66&#39;, &#39;2600:1408:ec00:36::1736:7f24&#39;, &#39;2600:1408:ec00:36::1736:7f31&#39;]</p>
           <p><span class="muted">MX:</span> [&#39;0 .&#39;]</p>
           <p><span class="muted">SPF:</span> present (-all)</p>
           
