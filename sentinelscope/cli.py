@@ -10,6 +10,7 @@ from rich.console import Console
 from rich.table import Table
 
 from sentinelscope.models import DomainScanResult
+from sentinelscope import __version__
 from sentinelscope.reporting.html import write_html_report
 from sentinelscope.scanning.http_headers import analyze_security_headers
 from sentinelscope.scanning.ports import TOP_30_PORTS, scan_ports
@@ -22,6 +23,9 @@ from sentinelscope.scanning.cors import analyze_cors
 from sentinelscope.scanning.cookies import analyze_cookies
 from sentinelscope.scanning.fingerprint import fingerprint_web
 from sentinelscope.scanning.dns_axfr import check_dns_axfr
+from sentinelscope.scanning.security_txt import fetch_security_txt
+from sentinelscope.scanning.mixed_content import check_mixed_content
+from sentinelscope.scanning.dns_extras import gather_dns_extras
 from datetime import datetime
 
 
@@ -33,6 +37,25 @@ app = typer.Typer(
     ),
 )
 console = Console()
+
+
+def _version_callback(value: bool):
+    if value:
+        typer.echo(f"SentinelScope {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _main_callback(
+    version: bool = typer.Option(  # type: ignore[assignment]
+        False,
+        "--version",
+        help="Show version and exit",
+        is_eager=True,
+        callback=_version_callback,
+    ),
+):
+    return
 
 
 def _resolve_ports(profile: str, custom: Optional[str]) -> list[int]:
@@ -63,8 +86,8 @@ def domain(
     custom_ports: Optional[str] = typer.Option(None, "--custom-ports", help="CSV of ports"),
     json_out: Optional[Path] = typer.Option(None, "--json", help="Write JSON to path"),
     html_out: Optional[Path] = typer.Option(None, "--html", help="Write HTML report to path"),
-    scan_subdomains: bool = typer.Option(True, "--scan-subdomains/--no-scan-subdomains", help="Enumerate subdomains (CT + DNS)", show_default=True),
-    scan_ports: bool = typer.Option(True, "--scan-ports/--no-scan-ports", help="Scan common ports", show_default=True),
+    do_scan_subdomains: bool = typer.Option(True, "--scan-subdomains/--no-scan-subdomains", help="Enumerate subdomains (CT + DNS)", show_default=True),
+    do_scan_ports: bool = typer.Option(True, "--scan-ports/--no-scan-ports", help="Scan common ports", show_default=True),
     analyze_headers: bool = typer.Option(True, "--analyze-headers/--no-analyze-headers", help="Analyze HTTP security headers", show_default=True),
     analyze_tls: bool = typer.Option(True, "--analyze-tls/--no-analyze-tls", help="Collect TLS info", show_default=True),
     analyze_dns: bool = typer.Option(True, "--analyze-dns/--no-analyze-dns", help="Assess DNS + SPF/DMARC", show_default=True),
@@ -72,6 +95,12 @@ def domain(
     analyze_cors_opt: bool = typer.Option(True, "--analyze-cors/--no-analyze-cors", help="Assess CORS policy", show_default=True),
     analyze_cookies_opt: bool = typer.Option(True, "--analyze-cookies/--no-analyze-cookies", help="Check cookie security flags", show_default=True),
     fingerprint_web_opt: bool = typer.Option(True, "--fingerprint-web/--no-fingerprint-web", help="Detect WAF/CDN and server", show_default=True),
+    check_security_txt_opt: bool = typer.Option(True, "--check-security-txt/--no-check-security-txt", help="Look for security.txt", show_default=True),
+    check_mixed_content_opt: bool = typer.Option(True, "--check-mixed-content/--no-check-mixed-content", help="Scan for insecure http references", show_default=True),
+    check_dnssec_caa_opt: bool = typer.Option(True, "--check-dnssec-caa/--no-check-dnssec-caa", help="Query DNSSEC and CAA records", show_default=True),
+    concurrency: int = typer.Option(200, "--concurrency", min=1, help="Max concurrent port connections"),
+    timeout: float = typer.Option(6.0, "--timeout", min=0.1, help="Network timeout (seconds) for HTTP checks"),
+    dns_timeout: float = typer.Option(2.0, "--dns-timeout", min=0.1, help="DNS resolution timeout (seconds)"),
 ):
     """Run a full domain scan and optionally emit JSON/HTML reports.
 
@@ -87,16 +116,29 @@ def domain(
     """
     async def _run():
         started = datetime.utcnow()
+        # Normalize input: accept either bare domain or full URL
+        raw = domain.strip()
+        host = raw
+        if raw.startswith("http://") or raw.startswith("https://"):
+            try:
+                from urllib.parse import urlparse
+
+                parsed = urlparse(raw)
+                host = (parsed.hostname or raw).strip('/')
+            except Exception:
+                host = raw.replace("https://", "").replace("http://", "").strip('/')
+        else:
+            host = raw.strip('/')
+        base_url = f"https://{host}"
         ports_list = _resolve_ports(ports, custom_ports)
 
-        console.rule(f"[bold]Scanning {domain}")
+        console.rule(f"[bold]Scanning {host}")
 
-        subdomains_task = enumerate_subdomains(domain) if scan_subdomains else None
-        ports_task = scan_ports(domain, ports_list) if scan_ports else None
-        tls_info = get_tls_info(domain) if analyze_tls else None
-        headers_task = analyze_security_headers(f"https://{domain}") if analyze_headers else None
-        dns_info = assess_dns(domain) if analyze_dns else None
-        preview_task = fetch_preview(f"https://{domain}") if web_preview else None
+        # Schedule async tasks where possible
+        subdomains_task = enumerate_subdomains(host, dns_timeout=dns_timeout, http_timeout=timeout) if do_scan_subdomains else None
+        ports_task = scan_ports(host, ports_list, concurrency=concurrency, timeout=1.0) if do_scan_ports else None
+        headers_task = analyze_security_headers(base_url, timeout=timeout) if analyze_headers else None
+        preview_task = fetch_preview(base_url, timeout=timeout) if web_preview else None
 
         subdomains = await subdomains_task if subdomains_task else None
         ports_res = await ports_task if ports_task else None
@@ -104,32 +146,39 @@ def domain(
         preview = await preview_task if preview_task else None
 
         takeover = None
-        try:
-            takeover = await check_takeover_candidates(subdomains.discovered)
-        except Exception:
-            takeover = None
+        if subdomains and subdomains.discovered:
+            try:
+                takeover = await check_takeover_candidates(subdomains.discovered)
+            except Exception:
+                takeover = None
 
-        cors_res = await analyze_cors(f"https://{domain}") if analyze_cors_opt else None
-        cookies_res = await analyze_cookies(f"https://{domain}") if analyze_cookies_opt else None
-        fp = await fingerprint_web(f"https://{domain}") if fingerprint_web_opt else None
-        axfr = check_dns_axfr(domain)
+        cors_res = await analyze_cors(base_url, timeout=timeout) if analyze_cors_opt else None
+        cookies_res = await analyze_cookies(base_url, timeout=timeout) if analyze_cookies_opt else None
+        fp = await fingerprint_web(base_url, timeout=timeout) if fingerprint_web_opt else None
+        axfr = check_dns_axfr(host)
+        sec_txt = await fetch_security_txt(host, timeout=timeout) if check_security_txt_opt else None
+        mixed = await check_mixed_content(base_url, timeout=timeout) if check_mixed_content_opt else None
+        dns_extra = gather_dns_extras(host) if check_dnssec_caa_opt else None
 
         finished = datetime.utcnow()
         result = DomainScanResult(
-            domain=domain,
+            domain=host,
             started_at=started,
             finished_at=finished,
             subdomains=subdomains,
             ports=ports_res,
-            tls=tls_info,
+            tls=get_tls_info(host, timeout=timeout) if analyze_tls else None,
             headers=headers,
-            dns=dns_info,
+            dns=assess_dns(host) if analyze_dns else None,
             preview=preview,
             takeover=takeover,
             cors=cors_res,
             cookies=cookies_res,
             web_fingerprint=fp,
             dns_axfr=axfr,
+            security_txt=sec_txt,
+            mixed_content=mixed,
+            dns_extras=dns_extra,
         )
 
         # Console summary

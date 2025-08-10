@@ -13,6 +13,9 @@ sscan --help
 ```bash
 sscan domain example.com \
   --ports top30 \
+  --timeout 6 \
+  --dns-timeout 2 \
+  --concurrency 200 \
   --json out/example.json \
   --html out/example.html
 ```
@@ -20,6 +23,9 @@ sscan domain example.com \
 Options:
 - `--ports`: `top30`, `top100`, or `custom`
 - `--custom-ports`: CSV list, e.g., `"22,80,443,8443"` (required when `--ports custom`)
+- `--timeout`: HTTP request timeout in seconds (affects headers, cookies, cors, fingerprint, preview, security.txt)
+- `--dns-timeout`: DNS lookup timeout in seconds (affects subdomain enumeration)
+- `--concurrency`: Max concurrent TCP connects for port scanning
 
 Outputs include:
 - DNS: A/AAAA/MX/TXT, SPF/DMARC posture
@@ -36,6 +42,11 @@ sscan tls shop.example.com --json out/tls.json
 
 # Ports
 sscan ports shop.example.com --ports top100 --json out/ports.json
+```
+
+### Version
+```bash
+sscan --version
 ```
 
 ### Exit codes

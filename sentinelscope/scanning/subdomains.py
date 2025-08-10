@@ -25,10 +25,10 @@ async def _resolve(hostname: str, timeout: float = 2.0) -> bool:
         return False
 
 
-async def _from_crtsh(domain: str) -> List[str]:
+async def _from_crtsh(domain: str, http_timeout: float = 8.0) -> List[str]:
     url = f"https://crt.sh/?q=%25.{domain}&output=json"
     try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
+        async with httpx.AsyncClient(timeout=http_timeout) as client:
             r = await client.get(url)
             if r.status_code != 200:
                 return []
@@ -45,12 +45,17 @@ async def _from_crtsh(domain: str) -> List[str]:
         return []
 
 
-async def enumerate_subdomains(root_domain: str, concurrent_dns: int = 50) -> SubdomainsResult:
+async def enumerate_subdomains(
+    root_domain: str,
+    concurrent_dns: int = 50,
+    http_timeout: float = 8.0,
+    dns_timeout: float = 2.0,
+) -> SubdomainsResult:
     discovered: Set[str] = set()
     sources: Dict[str, int] = {}
 
     # CT source
-    ct = await _from_crtsh(root_domain)
+    ct = await _from_crtsh(root_domain, http_timeout=http_timeout)
     discovered.update(ct)
     sources["crt.sh"] = len(ct)
 
@@ -60,7 +65,7 @@ async def enumerate_subdomains(root_domain: str, concurrent_dns: int = 50) -> Su
 
     async def check(name: str) -> None:
         async with semaphore:
-            if await _resolve(name):
+            if await _resolve(name, timeout=dns_timeout):
                 discovered.add(name)
 
     await asyncio.gather(*(check(c) for c in candidates))

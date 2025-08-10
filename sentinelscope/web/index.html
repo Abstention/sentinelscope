@@ -131,7 +131,7 @@
       }
       status.textContent = 'Scanning…';
       go.disabled = true;
-      jsonEl.textContent = '(working…)';
+      jsonEl.textContent = '(Loading…)';
       summaryEl.textContent = '';
       try {
         const resp = await fetch('/scan/domain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });

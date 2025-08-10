@@ -68,9 +68,13 @@ def _grade_from_findings(findings: List[HeaderFinding]) -> tuple[str, int]:
 
 
 async def analyze_security_headers(url: str, timeout: float = 5.0) -> SecurityHeadersAssessment:
-    async with httpx.AsyncClient(follow_redirects=True, timeout=timeout) as client:
-        resp = await client.get(url)
-    findings = evaluate_security_headers(dict(resp.headers))
-    grade, score = _grade_from_findings(findings)
-    return SecurityHeadersAssessment(url=url, findings=findings, grade=grade, score=score)
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=timeout) as client:
+            resp = await client.get(url)
+        findings = evaluate_security_headers(dict(resp.headers))
+        grade, score = _grade_from_findings(findings)
+        return SecurityHeadersAssessment(url=url, findings=findings, grade=grade, score=score)
+    except Exception:
+        # Network/HTTP errors should not crash the scan; return neutral result
+        return SecurityHeadersAssessment(url=url, findings=[], grade="N/A", score=0)
 

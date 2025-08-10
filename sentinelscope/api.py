@@ -19,6 +19,9 @@ from sentinelscope.scanning.cors import analyze_cors
 from sentinelscope.scanning.cookies import analyze_cookies
 from sentinelscope.scanning.fingerprint import fingerprint_web
 from sentinelscope.scanning.dns_axfr import check_dns_axfr
+from sentinelscope.scanning.security_txt import fetch_security_txt
+from sentinelscope.scanning.mixed_content import check_mixed_content
+from sentinelscope.scanning.dns_extras import gather_dns_extras
 
 
 app = FastAPI(title="SentinelScope API", version="0.1.0")
@@ -40,6 +43,20 @@ async def ui_root():
 @app.post("/scan/domain", response_model=DomainScanResult)
 async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
     started = datetime.utcnow()
+    # Normalize input: accept either bare domain or full URL
+    raw = req.domain.strip()
+    host = raw
+    if raw.startswith("http://") or raw.startswith("https://"):
+        try:
+            from urllib.parse import urlparse
+
+            parsed = urlparse(raw)
+            host = (parsed.hostname or raw).strip('/')
+        except Exception:
+            host = raw.replace("https://", "").replace("http://", "").strip('/')
+    else:
+        host = raw.strip('/')
+    base_url = f"https://{host}"
     ports_list = TOP_30_PORTS
     if req.port_profile == "top100":
         # Keep in sync with CLI; basic extension
@@ -52,16 +69,22 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
     elif req.port_profile == "custom" and req.custom_ports:
         ports_list = sorted(set(req.custom_ports))
 
-    subdomains_task = enumerate_subdomains(req.domain) if req.scan_subdomains else None
-    ports_task = scan_ports(req.domain, ports_list) if req.scan_ports else None
-    headers_task = analyze_security_headers(f"https://{req.domain}") if req.analyze_headers else None
-    tls_info = get_tls_info(req.domain) if req.analyze_tls else None
-    dns_info = assess_dns(req.domain) if req.analyze_dns else None
-    preview_task = fetch_preview(f"https://{req.domain}") if req.web_preview else None
-    cors_task = analyze_cors(f"https://{req.domain}") if req.analyze_cors else None
-    cookies_task = analyze_cookies(f"https://{req.domain}") if req.analyze_cookies else None
-    fp_task = fingerprint_web(f"https://{req.domain}") if req.fingerprint_web else None
-    axfr_res = check_dns_axfr(req.domain)
+    # Schedule async tasks
+    subdomains_task = asyncio.create_task(enumerate_subdomains(host)) if req.scan_subdomains else None
+    ports_task = asyncio.create_task(scan_ports(host, ports_list)) if req.scan_ports else None
+    headers_task = asyncio.create_task(analyze_security_headers(base_url)) if req.analyze_headers else None
+    preview_task = asyncio.create_task(fetch_preview(base_url)) if req.web_preview else None
+    cors_task = asyncio.create_task(analyze_cors(base_url)) if req.analyze_cors else None
+    cookies_task = asyncio.create_task(analyze_cookies(base_url)) if req.analyze_cookies else None
+    fp_task = asyncio.create_task(fingerprint_web(base_url)) if req.fingerprint_web else None
+    sec_txt_task = asyncio.create_task(fetch_security_txt(host)) if req.check_security_txt else None
+    mixed_task = asyncio.create_task(check_mixed_content(base_url)) if req.check_mixed_content else None
+
+    # Offload blocking calls to threads
+    tls_future = asyncio.to_thread(get_tls_info, host) if req.analyze_tls else None
+    dns_future = asyncio.to_thread(assess_dns, host) if req.analyze_dns else None
+    axfr_future = asyncio.to_thread(check_dns_axfr, host)
+    dns_extra_future = asyncio.to_thread(gather_dns_extras, host) if req.check_dnssec_caa else None
 
     subdomains_res = await subdomains_task if subdomains_task else None
     ports_res = await ports_task if ports_task else None
@@ -70,8 +93,14 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
     cors_res = await cors_task if cors_task else None
     cookies_res = await cookies_task if cookies_task else None
     fp_res = await fp_task if fp_task else None
+    sec_txt_res = await sec_txt_task if sec_txt_task else None
+    mixed_res = await mixed_task if mixed_task else None
+    tls_info = await tls_future if tls_future else None
+    dns_info = await dns_future if dns_future else None
+    axfr_res = await axfr_future
+    dns_extra_res = await dns_extra_future if dns_extra_future else None
     takeover_res = None
-    if subdomains_res:
+    if subdomains_res and subdomains_res.discovered:
         try:
             takeover_res = await check_takeover_candidates(subdomains_res.discovered)
         except Exception:
@@ -79,7 +108,7 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
 
     finished = datetime.utcnow()
     return DomainScanResult(
-        domain=req.domain,
+        domain=host,
         started_at=started,
         finished_at=finished,
         subdomains=subdomains_res,
@@ -93,5 +122,8 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
         cookies=cookies_res,
         web_fingerprint=fp_res,
         dns_axfr=axfr_res,
+        security_txt=sec_txt_res,
+        mixed_content=mixed_res,
+        dns_extras=dns_extra_res,
     )
 

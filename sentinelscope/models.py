@@ -17,6 +17,9 @@ class DomainScanRequest(BaseModel):
     analyze_cors: bool = True
     analyze_cookies: bool = True
     fingerprint_web: bool = True
+    check_security_txt: bool = True
+    check_mixed_content: bool = True
+    check_dnssec_caa: bool = True
     port_profile: str = Field(
         default="top30",
         description="One of: top30, top100, custom",
@@ -44,9 +47,9 @@ class TLSInfo(BaseModel):
     days_until_expiry: Optional[int] = None
     subject: Optional[Dict[str, str]] = None
     issuer: Optional[Dict[str, str]] = None
-    subject_alternative_names: List[str] = []
+    subject_alternative_names: List[str] = Field(default_factory=list)
     protocol: Optional[str] = None
-    warnings: List[str] = []
+    warnings: List[str] = Field(default_factory=list)
 
 
 class HeaderFinding(BaseModel):
@@ -83,14 +86,17 @@ class DomainScanResult(BaseModel):
     cookies: Optional["CookieAssessment"] = None
     web_fingerprint: Optional["WebFingerprint"] = None
     dns_axfr: Optional["DNSAxfrCheck"] = None
+    security_txt: Optional["SecurityTxt"] = None
+    mixed_content: Optional["MixedContentReport"] = None
+    dns_extras: Optional["DNSExtras"] = None
 
 
 class DNSAssessment(BaseModel):
     domain: str
-    a_records: List[str] = []
-    aaaa_records: List[str] = []
-    mx_records: List[str] = []
-    txt_records: List[str] = []
+    a_records: List[str] = Field(default_factory=list)
+    aaaa_records: List[str] = Field(default_factory=list)
+    mx_records: List[str] = Field(default_factory=list)
+    txt_records: List[str] = Field(default_factory=list)
     spf_present: bool = False
     spf_policy: Optional[str] = None  # e.g., -all, ~all, ?all
     spf_recommendation: Optional[str] = None
@@ -114,14 +120,14 @@ class TakeoverFinding(BaseModel):
 
 class TakeoverAssessment(BaseModel):
     checked_count: int
-    flagged: List[TakeoverFinding]
+    flagged: List[TakeoverFinding] = Field(default_factory=list)
 
 
 class CORSAssessment(BaseModel):
     url: str
     allow_origin: Optional[str] = None
     allow_credentials: Optional[bool] = None
-    risks: List[str] = []
+    risks: List[str] = Field(default_factory=list)
     recommendation: Optional[str] = None
 
 
@@ -130,23 +136,43 @@ class CookieInfo(BaseModel):
     secure: bool
     http_only: bool
     same_site: Optional[str] = None
-    issues: List[str] = []
+    issues: List[str] = Field(default_factory=list)
 
 
 class CookieAssessment(BaseModel):
     url: str
-    cookies: List[CookieInfo]
+    cookies: List[CookieInfo] = Field(default_factory=list)
 
 
 class WebFingerprint(BaseModel):
     url: str
     server: Optional[str] = None
     waf_or_cdn: Optional[str] = None
-    technologies: List[str] = []
+    technologies: List[str] = Field(default_factory=list)
 
 
 class DNSAxfrCheck(BaseModel):
     domain: str
-    attempted_ns: List[str] = []
-    axfr_allowed_on: List[str] = []
+    attempted_ns: List[str] = Field(default_factory=list)
+    axfr_allowed_on: List[str] = Field(default_factory=list)
+
+
+class SecurityTxt(BaseModel):
+    url: str
+    found: bool
+    contacts: List[str] = Field(default_factory=list)
+    policy: Optional[str] = None
+    expires: Optional[str] = None
+
+
+class MixedContentReport(BaseModel):
+    url: str
+    insecure_reference_count: int
+    examples: List[str] = Field(default_factory=list)
+
+
+class DNSExtras(BaseModel):
+    domain: str
+    dnssec_present: bool
+    caa_records: List[str] = Field(default_factory=list)
 

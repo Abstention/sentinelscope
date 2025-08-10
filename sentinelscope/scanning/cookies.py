@@ -26,9 +26,12 @@ def _parse_set_cookie(header_value: str) -> CookieInfo:
 
 
 async def analyze_cookies(url: str, timeout: float = 6.0) -> CookieAssessment:
-    async with httpx.AsyncClient(follow_redirects=True, timeout=timeout) as client:
-        resp = await client.get(url)
-    cookies_headers = resp.headers.get_list('set-cookie') if hasattr(resp.headers, 'get_list') else resp.headers.get('set-cookie', '').split('\n')
+    try:
+        async with httpx.AsyncClient(follow_redirects=True, timeout=timeout) as client:
+            resp = await client.get(url)
+        cookies_headers = resp.headers.get_list('set-cookie') if hasattr(resp.headers, 'get_list') else resp.headers.get('set-cookie', '').split('\n')
+    except Exception:
+        cookies_headers = []
     cookies: List[CookieInfo] = []
     for h in cookies_headers:
         if not h:
