@@ -1,7 +1,7 @@
 ## SentinelScope
 > Created by Josh Arbourne. Coffee optional; curiosity mandatory.
 
-Advanced attack surface recon and security reporting toolkit. It discovers subdomains, scans common ports, reviews HTTPS and DNS posture, and produces a polished HTML report anyone can read. Built with a CLI, REST API, tests, and CI. It’s the neat, friendly report you show your boss — without the panic.
+A modern, plain‑English security checkup for websites and domains. Finds subdomains, scans common ports, reviews HTTPS and DNS posture, checks headers, cookies and CORS, flags possible subdomain takeovers, and produces clean reports people actually read.
 
 ### Highlights
 - **Async recon pipeline**: subdomains, ports, TLS, HTTP headers, DNS, web preview
@@ -29,18 +29,16 @@ Advanced attack surface recon and security reporting toolkit. It discovers subdo
   pip install -e .  # optional for editable install
   ```
 
-### Quickstart
-Generate a one-page HTML report:
-```bash
-sscan domain example.com --html out/example.html
-open out/example.html  # macOS
-```
-
-Run the API server + web UI:
+### Quickstart (pick your path)
+- UI (no terminal needed)
 ```bash
 uvicorn sentinelscope.api:app --host 0.0.0.0 --port 8000
-# Then open http://127.0.0.1:8000/ for the UI
-# API docs at http://127.0.0.1:8000/docs
+# Open http://127.0.0.1:8000/ and click Scan
+```
+- CLI → HTML report
+```bash
+sscan domain example.com --html out/report.html
+# macOS: open out/report.html   Linux: xdg-open out/report.html   Windows: start out\report.html
 ```
 
 Call the API (macOS/Linux):
@@ -54,16 +52,25 @@ On Windows (PowerShell):
 Invoke-RestMethod -Method POST -Uri http://localhost:8000/scan/domain -ContentType 'application/json' -Body '{"domain":"example.com","scan_ports":true,"scan_subdomains":true,"analyze_headers":true,"analyze_tls":true}'
 ```
 
-### CLI Usage
+### Everyday usage (clean, memorable)
 ```bash
-sscan --help
+# Full scan, richer port profile + both outputs
+sscan domain example.com --ports top100 --html out/report.html --json out/report.json
 
-sscan domain DOMAIN [--ports top100|top30|custom --custom-ports "80,443,8080" \
-                     --json out.json --html out.html]
+# Faster scan (skip subdomains, cookies)
+sscan domain example.com --no-scan-subdomains --no-analyze-cookies --html out/quick.html
 
-sscan headers URL [--json out.json]
-sscan tls DOMAIN [--json out.json]
-sscan ports HOST [--ports top100|top30|custom --custom-ports "22,80,443" --json out.json]
+# Custom ports
+sscan domain example.com --ports custom --custom-ports "22,80,443,8443"
+
+# Focused checks
+sscan headers https://example.com --json out/headers.json
+sscan tls example.com --json out/tls.json
+sscan ports example.com --ports top100 --json out/ports.json
+sscan cors https://example.com --json out/cors.json
+sscan cookies https://example.com --json out/cookies.json
+sscan fingerprint https://example.com --json out/fp.json
+sscan axfr example.com --json out/axfr.json
 ```
 
 ### Show it to a layperson (GitHub Pages demo)
@@ -95,10 +102,14 @@ Tip: Use a domain you own or a known-public domain like `example.com` for demos.
 - **Subdomains**: CT log enumeration via crt.sh + lightweight wordlist DNS resolution
 - **Ports**: Async TCP connect scan against curated common ports
 - **TLS**: Certificate subject/issuer, SANs, expiry, validity window, protocol used
-- **HTTP Security Headers**: Presence/quality of CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, etc., with a letter grade
-- **DNS**: A/AAAA/MX/TXT posture, SPF/DMARC presence and recommendations
-- **Web Preview**: HTTP status, title, server, content-type
-- **Takeover**: Heuristic signatures for common providers
+- **HTTP Security Headers**: Presence/quality of CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy (graded)
+- **DNS**: A/AAAA/MX/TXT posture, SPF/DMARC (with suggestions)
+- **AXFR**: DNS zone transfer open? (quick check)
+- **Web preview**: HTTP status/title/server/type
+- **CORS**: allow‑origin/credentials risks
+- **Cookies**: Secure/HttpOnly/SameSite issues
+- **WAF/CDN**: light fingerprint (server/vendor hints)
+- **Takeover**: common dangling signatures (best‑effort)
 
 ### Project Structure
 ```

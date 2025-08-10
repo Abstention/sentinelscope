@@ -15,6 +15,10 @@ from sentinelscope.scanning.tls import get_tls_info
 from sentinelscope.scanning.dns_records import assess_dns
 from sentinelscope.scanning.web_preview import fetch_preview
 from sentinelscope.scanning.takeover import check_takeover_candidates
+from sentinelscope.scanning.cors import analyze_cors
+from sentinelscope.scanning.cookies import analyze_cookies
+from sentinelscope.scanning.fingerprint import fingerprint_web
+from sentinelscope.scanning.dns_axfr import check_dns_axfr
 
 
 app = FastAPI(title="SentinelScope API", version="0.1.0")
@@ -54,11 +58,18 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
     tls_info = get_tls_info(req.domain) if req.analyze_tls else None
     dns_info = assess_dns(req.domain) if req.analyze_dns else None
     preview_task = fetch_preview(f"https://{req.domain}") if req.web_preview else None
+    cors_task = analyze_cors(f"https://{req.domain}") if req.analyze_cors else None
+    cookies_task = analyze_cookies(f"https://{req.domain}") if req.analyze_cookies else None
+    fp_task = fingerprint_web(f"https://{req.domain}") if req.fingerprint_web else None
+    axfr_res = check_dns_axfr(req.domain)
 
     subdomains_res = await subdomains_task if subdomains_task else None
     ports_res = await ports_task if ports_task else None
     headers_res = await headers_task if headers_task else None
     preview_res = await preview_task if preview_task else None
+    cors_res = await cors_task if cors_task else None
+    cookies_res = await cookies_task if cookies_task else None
+    fp_res = await fp_task if fp_task else None
     takeover_res = None
     if subdomains_res:
         try:
@@ -78,5 +89,9 @@ async def scan_domain(req: DomainScanRequest) -> DomainScanResult:
         dns=dns_info,
         preview=preview_res,
         takeover=takeover_res,
+        cors=cors_res,
+        cookies=cookies_res,
+        web_fingerprint=fp_res,
+        dns_axfr=axfr_res,
     )
 

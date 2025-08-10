@@ -14,6 +14,9 @@ class DomainScanRequest(BaseModel):
     analyze_tls: bool = True
     analyze_dns: bool = True
     web_preview: bool = True
+    analyze_cors: bool = True
+    analyze_cookies: bool = True
+    fingerprint_web: bool = True
     port_profile: str = Field(
         default="top30",
         description="One of: top30, top100, custom",
@@ -76,6 +79,10 @@ class DomainScanResult(BaseModel):
     dns: Optional["DNSAssessment"] = None
     preview: Optional["WebPreview"] = None
     takeover: Optional["TakeoverAssessment"] = None
+    cors: Optional["CORSAssessment"] = None
+    cookies: Optional["CookieAssessment"] = None
+    web_fingerprint: Optional["WebFingerprint"] = None
+    dns_axfr: Optional["DNSAxfrCheck"] = None
 
 
 class DNSAssessment(BaseModel):
@@ -108,4 +115,38 @@ class TakeoverFinding(BaseModel):
 class TakeoverAssessment(BaseModel):
     checked_count: int
     flagged: List[TakeoverFinding]
+
+
+class CORSAssessment(BaseModel):
+    url: str
+    allow_origin: Optional[str] = None
+    allow_credentials: Optional[bool] = None
+    risks: List[str] = []
+    recommendation: Optional[str] = None
+
+
+class CookieInfo(BaseModel):
+    name: str
+    secure: bool
+    http_only: bool
+    same_site: Optional[str] = None
+    issues: List[str] = []
+
+
+class CookieAssessment(BaseModel):
+    url: str
+    cookies: List[CookieInfo]
+
+
+class WebFingerprint(BaseModel):
+    url: str
+    server: Optional[str] = None
+    waf_or_cdn: Optional[str] = None
+    technologies: List[str] = []
+
+
+class DNSAxfrCheck(BaseModel):
+    domain: str
+    attempted_ns: List[str] = []
+    axfr_allowed_on: List[str] = []
 

@@ -3,35 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SentinelScope UI</title>
+  <title>SentinelScope – Website Security Checkup</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    :root { --bg:#0f172a; --card:#111827; --border:#1f2937; --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; }
-    body { margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
-    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
-    .card { background: var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin:10px 0; }
-    h1, h2 { margin: 0 0 10px; }
-    label { display:block; margin:8px 0 4px; color: var(--muted); }
-    input[type="text"], select { width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#0b1220; color:var(--text); }
-    .row { display:flex; gap:16px; flex-wrap: wrap; }
-    .row > div { flex:1 1 220px; }
-    .btn { background: var(--accent); color:white; border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    :root { --bg:#0f172a; --surface:#0b1220; --card:#111827; --border:#1f2937; --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; --good:#10b981; --warn:#f59e0b; --bad:#ef4444; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; line-height:1.65; }
+    .wrap { max-width: 1040px; margin: 0 auto; padding: 24px; }
+    .card { background: var(--card); border:1px solid var(--border); border-radius:14px; padding:18px; margin:12px 0; }
+    h1 { margin: 0 0 4px; font-size: 26px; letter-spacing:.2px; }
+    h2 { margin: 0 0 10px; font-size: 18px; letter-spacing:.2px; }
+    label { display:block; margin:8px 0 4px; color: var(--muted); font-size: 14px; }
+    input[type="text"], select { width:100%; padding:12px; border-radius:10px; border:1px solid var(--border); background:var(--surface); color:var(--text); }
+    .row { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:16px; }
+    @media (max-width: 900px) { .row { grid-template-columns: 1fr; } }
+    .toggles { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:10px; }
+    @media (max-width: 900px) { .toggles { grid-template-columns: 1fr; } }
+    .btn { background: var(--accent); color:white; border:none; border-radius:10px; padding:12px 16px; cursor:pointer; font-weight:700; letter-spacing:.2px; }
     .btn:disabled { opacity:.6; cursor:not-allowed; }
     .muted { color: var(--muted); }
-    pre { white-space: pre-wrap; word-break: break-word; background:#0b1220; border:1px solid var(--border); border-radius:8px; padding:12px; }
-    .badge { display:inline-block; padding:3px 8px; border-radius:999px; font-weight:700; font-size:12px; }
-    .good { background:#065f46; color:#d1fae5; }
-    .warn { background:#78350f; color:#ffedd5; }
-    .bad  { background:#7f1d1d; color:#fee2e2; }
+    pre { white-space: pre-wrap; word-break: break-word; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:14px; }
+    .pill { display:inline-block; background: rgba(148,163,184,.12); border:1px solid var(--border); padding:6px 10px; border-radius:999px; font-size: 13px; }
+    .kvs { display:flex; gap:10px; flex-wrap:wrap; }
+    .kvs .item { background: var(--surface); border:1px solid var(--border); border-radius:10px; padding:8px 10px; font-size: 14px; }
+    .grid-2 { display:grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap:16px; }
+    @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <h1>SentinelScope – Quick Scan</h1>
-      <p class="muted">Type a domain and click Scan. We’ll show a summary and the raw JSON result.</p>
+      <h1>Website Security Checkup</h1>
+      <p class="muted">Enter a domain. We’ll run a safe, quick health check and show a simple summary you can share.</p>
       <div class="row">
         <div>
           <label for="domain">Domain</label>
@@ -40,30 +44,44 @@
         <div>
           <label for="profile">Port profile</label>
           <select id="profile">
-            <option value="top30">top30</option>
-            <option value="top100">top100</option>
+            <option value="top30">Top 30</option>
+            <option value="top100">Top 100</option>
           </select>
         </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button id="go" class="btn">Scan</button>
+          <span id="status" class="muted" style="margin-left:10px;"></span>
+        </div>
       </div>
-      <div class="row">
-        <div><label><input id="scan_ports" type="checkbox" checked /> Scan ports</label></div>
-        <div><label><input id="scan_subdomains" type="checkbox" checked /> Scan subdomains</label></div>
-        <div><label><input id="analyze_headers" type="checkbox" checked /> Analyze headers</label></div>
-        <div><label><input id="analyze_tls" type="checkbox" checked /> Analyze TLS</label></div>
-        <div><label><input id="analyze_dns" type="checkbox" checked /> Analyze DNS</label></div>
-        <div><label><input id="web_preview" type="checkbox" checked /> Web preview</label></div>
+      <div class="toggles" style="margin-top:10px;">
+        <label><input id="scan_ports" type="checkbox" checked /> Scan ports</label>
+        <label><input id="scan_subdomains" type="checkbox" checked /> Scan subdomains</label>
+        <label><input id="analyze_headers" type="checkbox" checked /> Analyze headers</label>
+        <label><input id="analyze_tls" type="checkbox" checked /> Analyze TLS</label>
+        <label><input id="analyze_dns" type="checkbox" checked /> Analyze DNS (SPF/DMARC)</label>
+        <label><input id="web_preview" type="checkbox" checked /> Web preview</label>
       </div>
-      <div style="margin-top:10px;"><button id="go" class="btn">Scan</button> <span id="status" class="muted"></span></div>
     </div>
 
     <div class="card">
       <h2>Summary</h2>
       <div id="summary" class="muted">No scan yet.</div>
+      <div class="kvs small" id="kvs" style="margin-top:8px; display:none;"></div>
     </div>
 
-    <div class="card">
-      <h2>Raw JSON</h2>
-      <pre id="json">(empty)</pre>
+    <div class="grid-2">
+      <div class="card">
+        <h2>Details</h2>
+        <pre id="json">(empty)</pre>
+      </div>
+      <div class="card">
+        <h2>Tips</h2>
+        <ul class="small">
+          <li>Start with headers grade and TLS – they affect all users.</li>
+          <li>Keep only expected ports open (usually 80/443 for websites).</li>
+          <li>Move DMARC to “reject” when you’ve covered all legitimate senders.</li>
+        </ul>
+      </div>
     </div>
   </div>
 
@@ -81,15 +99,19 @@
       const tls = res.tls?.protocol ?? 'n/a';
       const spf = res.dns?.spf_present ? 'Yes' : 'No';
       const dmarc = res.dns?.dmarc_policy ?? 'n/a';
-      return `
-        Domain: ${res.domain}
-        Headers grade: ${headersGrade}
-        TLS: ${tls}
-        Open ports: ${openPorts}
-        Subdomains: ${subs}
-        SPF present: ${spf}
-        DMARC policy: ${dmarc}
-      `.trim();
+      const kvs = [
+        ['Domain', res.domain],
+        ['Headers grade', headersGrade],
+        ['TLS', tls],
+        ['Open ports', String(openPorts)],
+        ['Subdomains', String(subs)],
+        ['SPF present', spf],
+        ['DMARC policy', dmarc],
+      ];
+      const kvsEl = document.getElementById('kvs');
+      kvsEl.innerHTML = kvs.map(([k,v]) => `<span class="item"><strong>${k}:</strong> ${v}</span>`).join('');
+      kvsEl.style.display = 'flex';
+      return 'Scan complete.';
     }
 
     async function runScan() {
