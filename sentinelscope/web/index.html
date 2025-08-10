@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SentinelScope UI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0f172a; --card:#111827; --border:#1f2937; --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; }
+    body { margin:0; background:var(--bg); color:var(--text); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+    .wrap { max-width: 960px; margin: 0 auto; padding: 24px; }
+    .card { background: var(--card); border:1px solid var(--border); border-radius:12px; padding:16px; margin:10px 0; }
+    h1, h2 { margin: 0 0 10px; }
+    label { display:block; margin:8px 0 4px; color: var(--muted); }
+    input[type="text"], select { width:100%; padding:10px; border-radius:8px; border:1px solid var(--border); background:#0b1220; color:var(--text); }
+    .row { display:flex; gap:16px; flex-wrap: wrap; }
+    .row > div { flex:1 1 220px; }
+    .btn { background: var(--accent); color:white; border:none; border-radius:8px; padding:10px 14px; cursor:pointer; font-weight:600; }
+    .btn:disabled { opacity:.6; cursor:not-allowed; }
+    .muted { color: var(--muted); }
+    pre { white-space: pre-wrap; word-break: break-word; background:#0b1220; border:1px solid var(--border); border-radius:8px; padding:12px; }
+    .badge { display:inline-block; padding:3px 8px; border-radius:999px; font-weight:700; font-size:12px; }
+    .good { background:#065f46; color:#d1fae5; }
+    .warn { background:#78350f; color:#ffedd5; }
+    .bad  { background:#7f1d1d; color:#fee2e2; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>SentinelScope – Quick Scan</h1>
+      <p class="muted">Type a domain and click Scan. We’ll show a summary and the raw JSON result.</p>
+      <div class="row">
+        <div>
+          <label for="domain">Domain</label>
+          <input id="domain" type="text" placeholder="example.com" />
+        </div>
+        <div>
+          <label for="profile">Port profile</label>
+          <select id="profile">
+            <option value="top30">top30</option>
+            <option value="top100">top100</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div><label><input id="scan_ports" type="checkbox" checked /> Scan ports</label></div>
+        <div><label><input id="scan_subdomains" type="checkbox" checked /> Scan subdomains</label></div>
+        <div><label><input id="analyze_headers" type="checkbox" checked /> Analyze headers</label></div>
+        <div><label><input id="analyze_tls" type="checkbox" checked /> Analyze TLS</label></div>
+        <div><label><input id="analyze_dns" type="checkbox" checked /> Analyze DNS</label></div>
+        <div><label><input id="web_preview" type="checkbox" checked /> Web preview</label></div>
+      </div>
+      <div style="margin-top:10px;"><button id="go" class="btn">Scan</button> <span id="status" class="muted"></span></div>
+    </div>
+
+    <div class="card">
+      <h2>Summary</h2>
+      <div id="summary" class="muted">No scan yet.</div>
+    </div>
+
+    <div class="card">
+      <h2>Raw JSON</h2>
+      <pre id="json">(empty)</pre>
+    </div>
+  </div>
+
+  <script>
+    const byId = (id) => document.getElementById(id);
+    const go = byId('go');
+    const status = byId('status');
+    const jsonEl = byId('json');
+    const summaryEl = byId('summary');
+
+    function summarize(res) {
+      const headersGrade = res.headers?.grade ?? 'n/a';
+      const openPorts = res.ports?.open_ports?.length ?? 0;
+      const subs = res.subdomains?.discovered?.length ?? 0;
+      const tls = res.tls?.protocol ?? 'n/a';
+      const spf = res.dns?.spf_present ? 'Yes' : 'No';
+      const dmarc = res.dns?.dmarc_policy ?? 'n/a';
+      return `
+        Domain: ${res.domain}
+        Headers grade: ${headersGrade}
+        TLS: ${tls}
+        Open ports: ${openPorts}
+        Subdomains: ${subs}
+        SPF present: ${spf}
+        DMARC policy: ${dmarc}
+      `.trim();
+    }
+
+    async function runScan() {
+      const body = {
+        domain: byId('domain').value.trim(),
+        scan_ports: byId('scan_ports').checked,
+        scan_subdomains: byId('scan_subdomains').checked,
+        analyze_headers: byId('analyze_headers').checked,
+        analyze_tls: byId('analyze_tls').checked,
+        analyze_dns: byId('analyze_dns').checked,
+        web_preview: byId('web_preview').checked,
+        port_profile: byId('profile').value,
+      };
+      if (!body.domain) {
+        alert('Please enter a domain');
+        return;
+      }
+      status.textContent = 'Scanning…';
+      go.disabled = true;
+      jsonEl.textContent = '(working…)';
+      summaryEl.textContent = '';
+      try {
+        const resp = await fetch('/scan/domain', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+        jsonEl.textContent = JSON.stringify(data, null, 2);
+        summaryEl.textContent = summarize(data);
+      } catch (e) {
+        jsonEl.textContent = `Error: ${e}`;
+        summaryEl.textContent = 'Failed to scan.';
+      } finally {
+        go.disabled = false;
+        status.textContent = '';
+      }
+    }
+
+    go.addEventListener('click', runScan);
+  </script>
+</body>
+</html>
+

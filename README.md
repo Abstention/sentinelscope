@@ -13,11 +13,21 @@ Advanced attack surface recon and security reporting toolkit. It discovers subdo
  - Optional Rust acceleration for port scanning (via maturin)
 
 ### Install
-```bash
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-pip install -e .  # optional for editable install
-```
+- macOS / Linux
+  ```bash
+  python3.11 -m venv .venv && source .venv/bin/activate
+  pip install -U pip
+  pip install -r requirements.txt
+  pip install -e .  # optional for editable install
+  ```
+- Windows (PowerShell)
+  ```powershell
+  py -3.11 -m venv .venv
+  .\.venv\Scripts\Activate.ps1
+  python -m pip install -U pip
+  pip install -r requirements.txt
+  pip install -e .  # optional for editable install
+  ```
 
 ### Quickstart
 Generate a one-page HTML report:
@@ -26,16 +36,22 @@ sscan domain example.com --html out/example.html
 open out/example.html  # macOS
 ```
 
-Run the API server:
+Run the API server + web UI:
 ```bash
 uvicorn sentinelscope.api:app --host 0.0.0.0 --port 8000
+# Then open http://127.0.0.1:8000/ for the UI
+# API docs at http://127.0.0.1:8000/docs
 ```
 
-Call the API:
+Call the API (macOS/Linux):
 ```bash
 curl -X POST 'http://localhost:8000/scan/domain' \
   -H 'Content-Type: application/json' \
   -d '{"domain":"example.com","scan_ports":true,"scan_subdomains":true,"analyze_headers":true,"analyze_tls":true}'
+```
+On Windows (PowerShell):
+```powershell
+Invoke-RestMethod -Method POST -Uri http://localhost:8000/scan/domain -ContentType 'application/json' -Body '{"domain":"example.com","scan_ports":true,"scan_subdomains":true,"analyze_headers":true,"analyze_tls":true}'
 ```
 
 ### CLI Usage
@@ -113,6 +129,7 @@ pip install -r requirements-dev.txt
 pre-commit install
 pytest -q
 ```
+On Windows (PowerShell), replace `source .venv/bin/activate` with `.\.venv\Scripts\Activate.ps1`.
 
 ### Optional: Build Rust native extension
 ```bash

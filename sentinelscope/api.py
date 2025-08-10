@@ -4,6 +4,8 @@ import asyncio
 from datetime import datetime
 
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from pathlib import Path
 
 from sentinelscope.models import DomainScanRequest, DomainScanResult
 from sentinelscope.scanning.http_headers import analyze_security_headers
@@ -21,6 +23,14 @@ app = FastAPI(title="SentinelScope API", version="0.1.0")
 @app.get("/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.get("/", response_class=HTMLResponse)
+async def ui_root():
+    index = Path(__file__).parent / "web" / "index.html"
+    if index.exists():
+        return index.read_text(encoding="utf-8")
+    return HTMLResponse("<h1>SentinelScope</h1><p>UI not built. Use /docs for API or the CLI.</p>")
 
 
 @app.post("/scan/domain", response_model=DomainScanResult)

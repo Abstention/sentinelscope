@@ -38,6 +38,7 @@ include-package-data = true
 
 [tool.setuptools.package-data]
 "sentinelscope.reporting" = ["templates/*.html"]
+"sentinelscope.web" = ["index.html"]
 
 [tool.setuptools.packages.find]
 include = ["sentinelscope*"]
